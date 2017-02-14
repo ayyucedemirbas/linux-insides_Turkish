@@ -1,13 +1,13 @@
-Çekirdek Önyükleme İşlemi
+Ã‡ekirdek Ã–nyÃ¼kleme Ä°ÅŸlemi
 
-Bu bölüm, Linux çekirdeğinin önyükleme işlemini açıklar. İşte size Linux çekirdeğinin ön yükleme sürecinin döngüsünü açıklayan birkaç tane bölüm:
+Bu bÃ¶lÃ¼m, Linux Ã§ekirdeÄŸinin Ã¶nyÃ¼kleme iÅŸlemini aÃ§Ä±klar. Ä°ÅŸte size Linux Ã§ekirdeÄŸinin Ã¶n yÃ¼kleme sÃ¼recinin dÃ¶ngÃ¼sÃ¼nÃ¼ aÃ§Ä±klayan birkaÃ§ tane bÃ¶lÃ¼m:
 
-Önyükleyiciyi yüklemeden çekirdeğe -  bilgisayarınızı açmanızdan çekirdeğin ilk talimatının çalışmasına kadar gerçekleşen tüm aşamaları açıklar.
+[Ã–nyÃ¼kleyiciyi yÃ¼klemeden Ã§ekirdeÄŸe](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-1.md) -  bilgisayarÄ±nÄ±zÄ± aÃ§manÄ±zdan Ã§ekirdeÄŸin ilk talimatÄ±nÄ±n Ã§alÄ±ÅŸmasÄ±na kadar gerÃ§ekleÅŸen tÃ¼m aÅŸamalarÄ± aÃ§Ä±klar.
 
-Çekirdeğin setup kodundaki ilk adımlar - çekirdeğin setup kodundaki ilk adımları açıklar. Heap (ç.n -belleğin bir bölümü)'in başlatılmasını, EDD, IST vb. gibi farklı parametrelerin sorgusunu göreceksiniz. 
+[Ã‡ekirdeÄŸin setup kodundaki ilk adÄ±mlar](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-2.md) - Ã§ekirdeÄŸin setup kodundaki ilk adÄ±mlarÄ± aÃ§Ä±klar. Heap (Ã§.n -belleÄŸin bir bÃ¶lÃ¼mÃ¼)'in baÅŸlatÄ±lmasÄ±nÄ±, EDD, IST vb. gibi farklÄ± parametrelerin sorgusunu gÃ¶receksiniz. 
 
-Video modunun başlatılması ve korumalı moda geçiş -  çekirdek setup kodunda video modunun başlangıcını ve korumalı moda geçişi açıklar.
+[Video modunun baÅŸlatÄ±lmasÄ± ve korumalÄ± moda geÃ§iÅŸ](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-3.md) -  Ã§ekirdek setup kodunda video modunun baÅŸlangÄ±cÄ±nÄ± ve korumalÄ± moda geÃ§iÅŸi aÃ§Ä±klar.
 
-64-bit moda geçiş - 64-bit moda geçiş için hazırlığı  ve geçişin ayrıntılarını açıklar.
+[64-bit moda geÃ§iÅŸ](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-4.md) - 64-bit moda geÃ§iÅŸ iÃ§in hazÄ±rlÄ±ÄŸÄ±  ve geÃ§iÅŸin ayrÄ±ntÄ±larÄ±nÄ± aÃ§Ä±klar.
 
-Sıkıştırılmış çekirdeği açmak - sıkıştırılmış çekirdeğin açılmasından önceki hazırlığı ve doğrudan açmanın deatylarını açıklar.
+[SÄ±kÄ±ÅŸtÄ±rÄ±lmÄ±ÅŸ Ã§ekirdeÄŸi aÃ§mak](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-5.md) - sÄ±kÄ±ÅŸtÄ±rÄ±lmÄ±ÅŸ Ã§ekirdeÄŸin aÃ§Ä±lmasÄ±ndan Ã¶nceki hazÄ±rlÄ±ÄŸÄ± ve doÄŸrudan aÃ§manÄ±n detaylarÄ±nÄ± aÃ§Ä±klar.
