@@ -198,7 +198,8 @@ Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını
              | Command line           | (Can also be below the X+10000 mark)
              X+10000  +------------------------+
              | Stack/heap             | For use by the kernel real-mode code.
-             X+08000  +------------------------+
+
+X+08000  +------------------------+
              | Kernel setup           | The kernel real-mode code.
              | Kernel boot sector     | The kernel legacy boot sector.
              X +------------------------+
@@ -265,37 +266,37 @@ _start:
 
 Önyükleyici(grub2 ve diğerleri), bu noktayı (MZ'den 0x200 ofset) biliyor ve header.S'nin bir hata mesajı yazdıran .bstext bölümünden başlamasına rağmen, doğrudan ona bir sıçrama yapıyor:
 
-//
-// arch/x86/boot/setup.ld
-//
-. = 0;                    // current position
-.bstext : { *(.bstext) }  // put .bstext section to position 0
-.bsdata : { *(.bsdata) }
+  //
+  // arch/x86/boot/setup.ld
+  //
+  . = 0;                    // current position
+  .bstext : { *(.bstext) }  // put .bstext section to position 0
+   .bsdata : { *(.bsdata) }
 
 
 Çekirdek kurulum giriş noktası şöyledir:
 
- .globl _start
-_start:
-    .byte  0xeb
-    .byte  start_of_setup-1f
-1:
-    //
-    // rest of the header
-    //
+    .globl _start
+   _start:
+      .byte  0xeb
+      .byte  start_of_setup-1f
+     1:
+       //
+       // rest of the header
+       //
 
 Burada start_of_setup-1f noktasına atlayan bir jmp komut opcode (0xeb) görebilirsiniz. Nf gösteriminde 2f, aşağıdaki yerel 2: etiketini belirtir; Bizim durumumuzda, atlama sonrasında bulunan etiket 1 ve kurulum başlığının geri kalanını içeriyor. Kurulum başlığının hemen sonrasında, .entrytext bölümünü görüyoruz; bu bölüm, start_of_setup etiketinden başlıyor.
 
 Aslında çalışan ilk kod budur (elbette önceki atlama talimatları hariç). Çekirdek kurulumu bootloader'dan kontrol aldıktan sonra, ilk jmp komutu, çekirdek gerçek Real Mode'unun başlangıcından itibaren 0x200 ofset'inde, yani ilk 512 bayttan sonra yer alır. Bu, hem Linux çekirdeği önyükleme protokolünü okuyabilir hem de grub2 kaynak kodunda görebiliriz:
 
-segment = grub_linux_real_target >> 4;
-state.gs = state.fs = state.es = state.ds = state.ss = segment;
-state.cs = segment + 0x20;
+   segment = grub_linux_real_target >> 4;
+   state.gs = state.fs = state.es = state.ds = state.ss = segment;
+   state.cs = segment + 0x20;
 
 Bu, çekirdek kurulumu başladıktan sonra segment kayıtlarının aşağıdaki değerleri içermesi anlamına gelir:
 
-gs = fs = es = ds = ss = 0x1000
-cs = 0x1020
+   gs = fs = es = ds = ss = 0x1000
+   cs = 0x1020
 
 Benim durumumda, çekirdek 0x10000'a yüklendi.
 
