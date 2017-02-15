@@ -325,6 +325,7 @@ _start:
     .byte start_of_setup-1f
 jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
 
+
 pushw   %ds
     pushw   $6f
     lretw
@@ -365,8 +366,11 @@ resim
 
 
   //#define LOADED_HIGH     (1<<0)
+  
   //#define QUIET_FLAG      (1<<5)
+  
   //#define KEEP_SEGMENTS   (1<<6)
+  
   //#define CAN_USE_HEAP    (1<<7)
 
 Ve önyükleme protokolünü okuyabildiğimiz için,
