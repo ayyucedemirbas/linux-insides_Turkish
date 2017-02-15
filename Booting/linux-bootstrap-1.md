@@ -331,7 +331,7 @@ pushw   %ds
     lretw
 
 Bu, ds değerini 6 etiketinin adresiyle yığına iter ve lretw komutunu çalıştırır. lretw komutu çağırıldığında, etiket 6'nın adresini komut gösterici kaydına yükler ve cs'yi ds değeriyle yükler. Daha sonra, ds ve cs aynı değerleri alacaktır.
-
+ 
 Stack Kurulumu
 
 Kurulum kodunun neredeyse tamamı gerçek modda C dil ortamına hazırlanıyor. Bir sonraki adım ss kayıt değerini kontrol etmek ve eğer yanlışsa düzeltmektir:
@@ -363,10 +363,11 @@ resim
 
 - İkinci senaryoda, (ss! = Ds). Önce, _end'in değerini (kurulum kodunun sonundaki adres) dx'e koyar ve yığını kullanıp kullanamayacağımızı test etmek için testb komutunu kullanarak loadflags başlık alanını kontrol ederiz. Loadflags, aşağıdaki gibi tanımlanan bir bit maskesi header'ı dır:
 
-#define LOADED_HIGH     (1<<0)
-#define QUIET_FLAG      (1<<5)
-#define KEEP_SEGMENTS   (1<<6)
-#define CAN_USE_HEAP    (1<<7)
+
+ #define LOADED_HIGH     (1<<0)
+ #define QUIET_FLAG      (1<<5)
+ #define KEEP_SEGMENTS   (1<<6)
+ #define CAN_USE_HEAP    (1<<7)
 
 Ve önyükleme protokolünü okuyabildiğimiz için,
 
