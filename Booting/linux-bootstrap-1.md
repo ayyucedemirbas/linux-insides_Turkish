@@ -1,46 +1,59 @@
-Daha onceki blog yazilarimi okuduysaniz, bir suredir low level programlamayla ilgilendigimi gorursunuz. Linux icin x86_64 Assembly programlamayla ilgili yazılar yazdım aynı zamanda Linux kaynak koduna dalmaya basladim. low-level programlarin; nasıl isledigini, bilgisayarımda nasıl calistigini, bellekte nasil yer aldiklarini, cekirdegin surecleri ve bellegi nasil yonettigini, network stack'in low-level'da nasil calistigini ve diger pek cok seyi anlamaya buyuk bir ilgim var. Bu nedenle, x86_64 icin Linux cekirdegi hakkında bir dizi yazi yazmaya karar verdim. 
-Profesyonel bir cekirdek hacker'ı degilim. Cekirdek kodu yazmak benim gercek isim degil. Bu benim icin sadece bir hobi. Low-level'dan hoslaniyorum ve bunun nasil calistigini gormek ilgimi cekiyor. Bu nedenle kafa karistirici bir sey gorurseniz veya herhangi bir sorunuz/fikriniz varsa, @0xAX twitter hesabimban, mail yoluyla veya GitHub'da issue olusturarak bana ulasabilirsiniz. Buna minnettar olurum. Butun yazilarim linux-insides GitHub sayfasindan erisilebilir olacak. İngilizce dil bilgimle veya yazi icerigi ile ilgili bir hata fark ederseniz, Pull Request gondermekten cekinmeyin. 
+Daha onceki blog yazilarimi okuduysaniz, bir suredir low level programlamayla ilgilendigimi gorursunuz. Linux icin x86_64 Assembly programlamayla ilgili yazÄ±lar yazdÄ±m aynÄ± zamanda Linux kaynak koduna dalmaya basladim. low-level programlarin; nasÄ±l isledigini, bilgisayarÄ±mda nasÄ±l calistigini, bellekte nasil yer aldiklarini, cekirdegin surecleri ve bellegi nasil yonettigini, network stack'in low-level'da nasil calistigini ve diger pek cok seyi anlamaya buyuk bir ilgim var. Bu nedenle, x86_64 icin Linux cekirdegi hakkÄ±nda bir dizi yazi yazmaya karar verdim. 
+
+Profesyonel bir cekirdek hacker'Ä± degilim. Cekirdek kodu yazmak benim gercek isim degil. Bu benim icin sadece bir hobi. Low-level'dan hoslaniyorum ve bunun nasil calistigini gormek ilgimi cekiyor. Bu nedenle kafa karistirici bir sey gorurseniz veya herhangi bir sorunuz/fikriniz varsa, @0xAX twitter hesabimban, mail yoluyla veya GitHub'da issue olusturarak bana ulasabilirsiniz. Buna minnettar olurum. Butun yazilarim linux-insides GitHub sayfasindan erisilebilir olacak. Ä°ngilizce dil bilgimle veya yazi icerigi ile ilgili bir hata fark ederseniz, Pull Request gondermekten cekinmeyin. 
+
 Unutmayin ki; bu resmi bir dokumantasyon degildir, sadece ogrendiklerimi paylasiyorum. 
+
 Size gerekli olan beceriler;
+
 - C programlama dili bilgisi
 - Assembly kod bilgisi (AT&T soz dizimi)
-Bazi aracları ogrenmeye baslarsaniz, yazilarim sırasında bazi kısımlari zaten aciklamaya calisacagim. Pekala, giriş kısmın burada son buluyor. Şimdi çekirdek ve low-level'a dalmaya başlayabiliriz. 
-Kodların tamamı aslında 3.18 çekirdeği için. Değişiklikler olursa yazılarımı buna göre güncelleyeceğim. 
-Sihirli Güç Düğmesi, Sonrasında Neler Oluyor?
-Bu Linux çekirdeği ile ilgili bir dizi yazı olsa da, çekirdek kodundan başlayacağız - en azından bu paragrafta. Dizüstü veya masaüstü bilgisayarınızdaki sihirli güç düğmesine bastığınız anda çalışmaya başlar. Anakart güç kaynağına bir sinyal gönderiyor. Sinyali aldıktan sonra güç kaynağı bilgisayara doğru miktarda elektrik sağlar. Anakart güç iyi sinyalini aldıktan sonra, CPU'yu başlatmaya çalışır. İşlemci tüm kalan veriyi kayıtlarında sıfırlar ve her biri için önceden tanımlanmış değerleri ayarlar.
-80386 ve sonraki CPU'lar, bilgisayar sıfırlandıktan sonra CPU kayıtlarında aşağıdaki önceden tanımlı verileri tanımlar:
+
+Bazi araclarÄ± ogrenmeye baslarsaniz, yazilarim sÄ±rasÄ±nda bazi kÄ±sÄ±mlari zaten aciklamaya calisacagim. Pekala, giriÅŸ kÄ±smÄ±n burada son buluyor. Åimdi Ã§ekirdek ve low-level'a dalmaya baÅŸlayabiliriz. 
+
+KodlarÄ±n tamamÄ± aslÄ±nda 3.18 Ã§ekirdeÄŸi iÃ§in. DeÄŸiÅŸiklikler olursa yazÄ±larÄ±mÄ± buna gÃ¶re gÃ¼ncelleyeceÄŸim. 
+
+Sihirli GÃ¼Ã§ DÃ¼ÄŸmesi, SonrasÄ±nda Neler Oluyor?
+
+Bu Linux Ã§ekirdeÄŸi ile ilgili bir dizi yazÄ± olsa da, Ã§ekirdek kodundan baÅŸlayacaÄŸÄ±z - en azÄ±ndan bu paragrafta. DizÃ¼stÃ¼ veya masaÃ¼stÃ¼ bilgisayarÄ±nÄ±zdaki sihirli gÃ¼Ã§ dÃ¼ÄŸmesine bastÄ±ÄŸÄ±nÄ±z anda Ã§alÄ±ÅŸmaya baÅŸlar. Anakart gÃ¼Ã§ kaynaÄŸÄ±na bir sinyal gÃ¶nderiyor. Sinyali aldÄ±ktan sonra gÃ¼Ã§ kaynaÄŸÄ± bilgisayara doÄŸru miktarda elektrik saÄŸlar. Anakart gÃ¼Ã§ iyi sinyalini aldÄ±ktan sonra, CPU'yu baÅŸlatmaya Ã§alÄ±ÅŸÄ±r.
+
+Ä°ÅŸlemci tÃ¼m kalan veriyi kayÄ±tlarÄ±nda sÄ±fÄ±rlar ve her biri iÃ§in Ã¶nceden tanÄ±mlanmÄ±ÅŸ deÄŸerleri ayarlar.
+
+80386 ve sonraki CPU'lar, bilgisayar sÄ±fÄ±rlandÄ±ktan sonra CPU kayÄ±tlarÄ±nda aÅŸaÄŸÄ±daki Ã¶nceden tanÄ±mlÄ± verileri tanÄ±mlar:
+
 
 IP          0xfff0
 CS selector 0xf000
 CS base     0xffff0000
 
 
-İşlemci Real Mode'da çalışmaya başlar. Biraz geriye dönelim ve bu modda bellek bölütlemeyi anlamaya çalışalım. Real Mode, tüm x86 uyumlu işlemcilerde, 8086'dan modern Intel 64 bit CPU'lara kadar desteklenir. 8086 işlemci, 20 bitlik bir adres veri yoluna sahiptir, bu da 0-0x100000 adres alanı (1 megabayt) ile çalışabileceği anlamına gelir. Ancak, yalnızca maksimum 2 ^ 16 - 1 adresine veya 0xffff (64 kilobayt) olan 16 bitlik yazmaçlara sahiptir. Bellek bölütleme, mevcut tüm adres alanını kullanmak için kullanılır. Tüm bellek, 65536 bayt (64 KB) küçük, sabit boyutlu bölümlere ayrılmıştır. 16 KB'lık yazmaçlarla 64 KB'ın üstündeki hafızayı ele alamayacağımızdan, alternatif bir yöntem tasarlanmıştır. Bir adres, iki bölümden oluşur: bir taban adresi olan bir Segment Selector ve bu taban adresinden bir uzaklık. Real Mode'da, bir Segment Selector'ın ilişkili taban adresi Segment Selector * 16'dır. Dolayısıyla, bellekte fiziksel bir adres almak için Segment Selector parçayı 16 ile çarpıp ofset eklemeliyiz:
+Ä°ÅŸlemci Real Mode'da Ã§alÄ±ÅŸmaya baÅŸlar. Biraz geriye dÃ¶nelim ve bu modda bellek bÃ¶lÃ¼tlemeyi anlamaya Ã§alÄ±ÅŸalÄ±m. Real Mode, tÃ¼m x86 uyumlu iÅŸlemcilerde, 8086'dan modern Intel 64 bit CPU'lara kadar desteklenir. 8086 iÅŸlemci, 20 bitlik bir adres veri yoluna sahiptir, bu da 0-0x100000 adres alanÄ± (1 megabayt) ile Ã§alÄ±ÅŸabileceÄŸi anlamÄ±na gelir. Ancak, yalnÄ±zca maksimum 2 ^ 16 - 1 adresine veya 0xffff (64 kilobayt) olan 16 bitlik yazmaÃ§lara sahiptir. Bellek bÃ¶lÃ¼tleme, mevcut tÃ¼m adres alanÄ±nÄ± kullanmak iÃ§in kullanÄ±lÄ±r. TÃ¼m bellek, 65536 bayt (64 KB) kÃ¼Ã§Ã¼k, sabit boyutlu bÃ¶lÃ¼mlere ayrÄ±lmÄ±ÅŸtÄ±r. 16 KB'lÄ±k yazmaÃ§larla 64 KB'Ä±n Ã¼stÃ¼ndeki hafÄ±zayÄ± ele alamayacaÄŸÄ±mÄ±zdan, alternatif bir yÃ¶ntem tasarlanmÄ±ÅŸtÄ±r. Bir adres, iki bÃ¶lÃ¼mden oluÅŸur: bir taban adresi olan bir Segment Selector ve bu taban adresinden bir uzaklÄ±k. Real Mode'da, bir Segment Selector'Ä±n iliÅŸkili taban adresi Segment Selector * 16'dÄ±r. DolayÄ±sÄ±yla, bellekte fiziksel bir adres almak iÃ§in Segment Selector parÃ§ayÄ± 16 ile Ã§arpÄ±p ofset eklemeliyiz:
+
 
 PhysicalAddress = Segment Selector * 16 + Offset
 
-Örneğin, CS: IP 0x2000: 0x0010 ise, karşılık gelen fiziksel adres:
+Ã–rneÄŸin, CS: IP 0x2000: 0x0010 ise, karÅŸÄ±lÄ±k gelen fiziksel adres:
 
 >>> hex((0x2000 << 4) + 0x0010)
 '0x20010'
 
-Ancak, en büyük Segment Selector'ını ve offsetini 0xffff:0xffff olarak alırsak, sonuçta adres:
+Ancak, en bÃ¼yÃ¼k Segment Selector'Ä±nÄ± ve offsetini 0xffff:0xffff olarak alÄ±rsak, sonuÃ§ta adres:
 
 >>> hex((0xffff << 4) + 0xffff)
 '0x10ffef'
 
- Real Mode'da yalnızca bir megabayta erişilebildiğinden; 0x10ffef, A20'nin devre dışı kalmasıyla 0x00ffef'e dönüşecek.
+ Real Mode'da yalnÄ±zca bir megabayta eriÅŸilebildiÄŸinden; 0x10ffef, A20'nin devre dÄ±ÅŸÄ± kalmasÄ±yla 0x00ffef'e dÃ¶nÃ¼ÅŸecek.
 
-Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register değerlerini tartışmaya geri dönelim:
+Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register deÄŸerlerini tartÄ±ÅŸmaya geri dÃ¶nelim:
 
-CS kaydı iki bölümden oluşur: Görünür Segment Selector ve gizli taban adresi. Taban adresi genellikle 16 ile Segment Selector değer çarpılarak oluşturulurken, bir donanım sıfırlama sırasında CS kayıttaki Segment Selector 0xf000 ile yüklenir ve taban adresi 0xffff0000 ile yüklenir; Işlemci, CS değiştirilinceye kadar bu özel taban adresini kullanır.
+CS kaydÄ± iki bÃ¶lÃ¼mden oluÅŸur: GÃ¶rÃ¼nÃ¼r Segment Selector ve gizli taban adresi. Taban adresi genellikle 16 ile Segment Selector deÄŸer Ã§arpÄ±larak oluÅŸturulurken, bir donanÄ±m sÄ±fÄ±rlama sÄ±rasÄ±nda CS kayÄ±ttaki Segment Selector 0xf000 ile yÃ¼klenir ve taban adresi 0xffff0000 ile yÃ¼klenir; IÅŸlemci, CS deÄŸiÅŸtirilinceye kadar bu Ã¶zel taban adresini kullanÄ±r.
 
-Başlangıç adresi; taban adresi, EIP kaydındaki değere eklenerek oluşturulmuştur:
+BaÅŸlangÄ±Ã§ adresi; taban adresi, EIP kaydÄ±ndaki deÄŸere eklenerek oluÅŸturulmuÅŸtur:
 
 >>> 0xffff0000 + 0xfff0
 '0xfffffff0'
 
-4GB (16 bayt) olan 0xfffffff0 elde ediyoruz. Bu noktaya Sıfırlama vektörü denir. Bu, CPU'nun sıfırlamadan sonra yürütülecek ilk talimatı bulmasını beklediği hafıza yeridir. Genellikle BIOS giriş noktasına işaret eden bir atlama (jmp) yönergesi içerir. Örneğin, coreboot kaynak koduna bakarsak, şunu görürüz:
+4GB (16 bayt) olan 0xfffffff0 elde ediyoruz. Bu noktaya SÄ±fÄ±rlama vektÃ¶rÃ¼ denir. Bu, CPU'nun sÄ±fÄ±rlamadan sonra yÃ¼rÃ¼tÃ¼lecek ilk talimatÄ± bulmasÄ±nÄ± beklediÄŸi hafÄ±za yeridir. Genellikle BIOS giriÅŸ noktasÄ±na iÅŸaret eden bir atlama (jmp) yÃ¶nergesi iÃ§erir. Ã–rneÄŸin, coreboot kaynak koduna bakarsak, ÅŸunu gÃ¶rÃ¼rÃ¼z:
 
 
     .section ".reset"
@@ -51,7 +64,7 @@ reset_vector:
     .int   _start - ( . + 2 )
     ...
 
-Burada, 0xe9 olan jmp komutunun opcode'u ve _start-(. + 2) adresindeki hedef adresi görülebilir. Sıfırlama bölümünün 16 bayt olduğunu ve 0xfffffff0'da başladığını da görebiliriz.
+Burada, 0xe9 olan jmp komutunun opcode'u ve _start-(. + 2) adresindeki hedef adresi gÃ¶rÃ¼lebilir. SÄ±fÄ±rlama bÃ¶lÃ¼mÃ¼nÃ¼n 16 bayt olduÄŸunu ve 0xfffffff0'da baÅŸladÄ±ÄŸÄ±nÄ± da gÃ¶rebiliriz.
 
 SECTIONS {
     _ROMTOP = 0xfffffff0;
@@ -63,7 +76,8 @@ SECTIONS {
     }
 }
 
-Şimdi BIOS başatılıyor; BIOS'u başlatıp denetledikten sonra BIOS'un önyüklenebilir bir aygıt bulması gerekir. Bir önyükleme emri, BIOS'un hangi aygıtlardan önyükleme yapmaya çalıştığını kontrol eden BIOS yapılandırmasında saklanır. BIOS bir sabit diskten önyükleme yapmaya çalışırken bir önyükleme sektörü bulmaya çalışıyor. MBR bölüm düzeniyle bölünmüş sabit sürücüler üzerinde önyükleme sektörü, her sektör 512 bayt olan ilk sektörün ilk 446 baytında depolanır. İlk sektörün son iki baytı 0x55 ve 0xaa'dır ve bu, BIOS'a bu aygıtın önyüklenebilir olduğunu belirtir. Örneğin:
+Åimdi BIOS baÅŸatÄ±lÄ±yor; BIOS'u baÅŸlatÄ±p denetledikten sonra BIOS'un Ã¶nyÃ¼klenebilir bir aygÄ±t bulmasÄ± gerekir. Bir Ã¶nyÃ¼kleme emri, BIOS'un hangi aygÄ±tlardan Ã¶nyÃ¼kleme yapmaya Ã§alÄ±ÅŸtÄ±ÄŸÄ±nÄ± kontrol eden BIOS yapÄ±landÄ±rmasÄ±nda saklanÄ±r. BIOS bir sabit diskten Ã¶nyÃ¼kleme yapmaya Ã§alÄ±ÅŸÄ±rken bir Ã¶nyÃ¼kleme sektÃ¶rÃ¼ bulmaya Ã§alÄ±ÅŸÄ±yor. MBR bÃ¶lÃ¼m dÃ¼zeniyle bÃ¶lÃ¼nmÃ¼ÅŸ sabit sÃ¼rÃ¼cÃ¼ler Ã¼zerinde Ã¶nyÃ¼kleme sektÃ¶rÃ¼, her sektÃ¶r 512 bayt olan ilk sektÃ¶rÃ¼n ilk 446 baytÄ±nda depolanÄ±r. Ä°lk sektÃ¶rÃ¼n son iki baytÄ± 0x55 ve 0xaa'dÄ±r ve bu, BIOS'a bu aygÄ±tÄ±n Ã¶nyÃ¼klenebilir olduÄŸunu belirtir. Ã–rneÄŸin:
+
 
 ;
 ; Note: this example is written in Intel Assembly syntax
@@ -85,36 +99,36 @@ times 510-($-$$) db 0
 db 0x55
 db 0xaa
 
-Şu komutla derleyin ve çalıştırın: 
+Åu komutla derleyin ve Ã§alÄ±ÅŸtÄ±rÄ±n: 
 
 nasm -f bin boot.nasm && qemu-system-x86_64 boot
 
-Bu, QEMU'ya yeni bir disk imajı olarak oluşturduğumuz önyükleme ikili dosyasını kullanmasını söyleyecektir. Yukarıdaki montaj koduyla oluşturulan ikili, önyükleme sektörünün gerekliliklerini yerine getirdiğinden (orijin 0x7c00 olarak ayarlanır ve sihirli diziyle biter) ikili dosyayı bir disk imajının ana önyükleme kaydı (MBR) olarak değerlendirecektir.
+Bu, QEMU'ya yeni bir disk imajÄ± olarak oluÅŸturduÄŸumuz Ã¶nyÃ¼kleme ikili dosyasÄ±nÄ± kullanmasÄ±nÄ± sÃ¶yleyecektir. YukarÄ±daki montaj koduyla oluÅŸturulan ikili, Ã¶nyÃ¼kleme sektÃ¶rÃ¼nÃ¼n gerekliliklerini yerine getirdiÄŸinden (orijin 0x7c00 olarak ayarlanÄ±r ve sihirli diziyle biter) ikili dosyayÄ± bir disk imajÄ±nÄ±n ana Ã¶nyÃ¼kleme kaydÄ± (MBR) olarak deÄŸerlendirecektir.
 
-Şunu göreceksiniz;
+Åunu gÃ¶receksiniz;
 
 resim
 
 
 
-Bu örnekte, kodun 16 bit gerçek modda yürütüleceğini ve bellekte 0x7c00'de başlayacağını görebilirsiniz. Başladıktan sonra; sadece "!" sembolünü yazdıran, 0x10 işlemini çağırır; kalan 510 bayt'ı sıfırlarla doldurur ve iki sihirli bayt 0xaa ve 0x55 ile bitirir.
+Bu Ã¶rnekte, kodun 16 bit gerÃ§ek modda yÃ¼rÃ¼tÃ¼leceÄŸini ve bellekte 0x7c00'de baÅŸlayacaÄŸÄ±nÄ± gÃ¶rebilirsiniz. BaÅŸladÄ±ktan sonra; sadece "!" sembolÃ¼nÃ¼ yazdÄ±ran, 0x10 iÅŸlemini Ã§aÄŸÄ±rÄ±r; kalan 510 bayt'Ä± sÄ±fÄ±rlarla doldurur ve iki sihirli bayt 0xaa ve 0x55 ile bitirir.
 
-Objdump kullanarak bunun bir ikili dökümünü görebilirsiniz:
+Objdump kullanarak bunun bir ikili dÃ¶kÃ¼mÃ¼nÃ¼ gÃ¶rebilirsiniz:
 
 nasm -f bin boot.nasm
 objdump -D -b binary -mi386 -Maddr16,data16,intel boot
 
-Gerçek dünyadaki bir önyükleme sektörü, önyükleme işlemini devam ettirmek için bir koda ve bir bit sayısı ve bir ünlem işareti yerine bir bölüm tablosuna sahiptir :) Bu noktadan sonra, BIOS, kontrolü önyükleyiciye devreder.
-NOT: Yukarıda açıklandığı gibi, CPU Real Mode'dadır; Real Mode'da, hafızadaki fiziksel adresi hesaplama şu şekilde yapılır:
+GerÃ§ek dÃ¼nyadaki bir Ã¶nyÃ¼kleme sektÃ¶rÃ¼, Ã¶nyÃ¼kleme iÅŸlemini devam ettirmek iÃ§in bir koda ve bir bit sayÄ±sÄ± ve bir Ã¼nlem iÅŸareti yerine bir bÃ¶lÃ¼m tablosuna sahiptir :) Bu noktadan sonra, BIOS, kontrolÃ¼ Ã¶nyÃ¼kleyiciye devreder.
+NOT: YukarÄ±da aÃ§Ä±klandÄ±ÄŸÄ± gibi, CPU Real Mode'dadÄ±r; Real Mode'da, hafÄ±zadaki fiziksel adresi hesaplama ÅŸu ÅŸekilde yapÄ±lÄ±r:
 
 PhysicalAddress = Segment Selector * 16 + Offset
 
-Tıpkı daha önce açıklandığı gibi. Sadece 16 bit genel amaçlı kayıtlarımız var; 16 bitlik bir kaydın maksimum değeri 0xffff, yani en büyük değerleri alırsak sonuç şöyle olacaktır:
+TÄ±pkÄ± daha Ã¶nce aÃ§Ä±klandÄ±ÄŸÄ± gibi. Sadece 16 bit genel amaÃ§lÄ± kayÄ±tlarÄ±mÄ±z var; 16 bitlik bir kaydÄ±n maksimum deÄŸeri 0xffff, yani en bÃ¼yÃ¼k deÄŸerleri alÄ±rsak sonuÃ§ ÅŸÃ¶yle olacaktÄ±r:
 
 >>> hex((0xffff * 16) + 0xffff)
 '0x10ffef'
 
-Burada 0x10ffef 1MB + 64KB - 16b'ye eşittir. Bunun tersine, 8086 işlemci (Real Mode'lu ilk işlemci), 20 bitlik bir adres satırına sahiptir. 2 ^ 20 = 1048576, 1MB olduğu için, mevcut kullanılabilir belleğin 1MB olduğu anlamına gelir. Genel Real Mode'un hafıza haritası aşağıdaki gibidir:
+Burada 0x10ffef 1MB + 64KB - 16b'ye eÅŸittir. Bunun tersine, 8086 iÅŸlemci (Real Mode'lu ilk iÅŸlemci), 20 bitlik bir adres satÄ±rÄ±na sahiptir. 2 ^ 20 = 1048576, 1MB olduÄŸu iÃ§in, mevcut kullanÄ±labilir belleÄŸin 1MB olduÄŸu anlamÄ±na gelir. Genel Real Mode'un hafÄ±za haritasÄ± aÅŸaÄŸÄ±daki gibidir:
 
 0x00000000 - 0x000003FF - Real Mode Interrupt Vector Table
 0x00000400 - 0x000004FF - BIOS Data Area
@@ -128,21 +142,21 @@ Burada 0x10ffef 1MB + 64KB - 16b'ye eşittir. Bunun tersine, 8086 işlemci (Real M
 0x000C8000 - 0x000EFFFF - BIOS Shadow Area
 0x000F0000 - 0x000FFFFF - System BIOS
 
-Bu yazının başında CPU tarafından yürütülen ilk talimatın 0xFFFFFFF0 adresinde olduğunu yazmıştım, 0xFFFFFF'den (1MB) daha büyüktür. CPU Real Mode'da bu adrese nasıl erişebilir? Cevap coreboot belgelerinde verilmiştir:
+Bu yazÄ±nÄ±n baÅŸÄ±nda CPU tarafÄ±ndan yÃ¼rÃ¼tÃ¼len ilk talimatÄ±n 0xFFFFFFF0 adresinde olduÄŸunu yazmÄ±ÅŸtÄ±m, 0xFFFFFF'den (1MB) daha bÃ¼yÃ¼ktÃ¼r. CPU Real Mode'da bu adrese nasÄ±l eriÅŸebilir? Cevap coreboot belgelerinde verilmiÅŸtir:
 
 0xFFFE_0000 - 0xFFFF_FFFF: 128 kilobyte ROM mapped into address space
 
-Çalıştırmanın başlangıcında BIOS RAM'de değil, ROM'da bulunur. 
+Ã‡alÄ±ÅŸtÄ±rmanÄ±n baÅŸlangÄ±cÄ±nda BIOS RAM'de deÄŸil, ROM'da bulunur. 
 
 
 Bootloader
 
 
-GRUB 2 ve syslinux gibi Linux'u önyükleyebilen bir dizi önyükleyici var. Linux çekirdeğinin Linux desteği uygulamak için bir önyükleyicinin gereksinimlerini belirten bir Önyükleme protokolü vardır. Bu örnek, GRUB 2'yi açıklayacaktır.
+GRUB 2 ve syslinux gibi Linux'u Ã¶nyÃ¼kleyebilen bir dizi Ã¶nyÃ¼kleyici var. Linux Ã§ekirdeÄŸinin Linux desteÄŸi uygulamak iÃ§in bir Ã¶nyÃ¼kleyicinin gereksinimlerini belirten bir Ã–nyÃ¼kleme protokolÃ¼ vardÄ±r. Bu Ã¶rnek, GRUB 2'yi aÃ§Ä±klayacaktÄ±r.
 
-BIOS, bir önyükleme aygıtı seçti ve kontrolü önyükleme kesimi koduna aktardığı için yürütme boot.img'den başlatılır. Bu kod, mevcut sınırlı miktarda alan nedeniyle çok basittir ve GRUB 2'nin temel görüntüsünün konumuna atlamak için kullanılan bir işaretçi içerir. Çekirdek imajı diskboot.img ile başlar ve genellikle ilk bölümden hemen sonra kullanılmayan alana ilk bölümden önce kaydedilir. Yukarıdaki kod, GRUB 2'nin çekirdeğini ve dosya sistemlerini işlemek için kullanılan sürücüleri içeren çekirdek görüntüsünün geri kalanını belleğe yükler. Çekirdek imajının geri kalanını yükledikten sonra, grub_main'i çalıştırır.
-Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını ayarlar, grub yapılandırma dosyasını yükler / ayrıştırır, modülleri yükler vb. Çalıştırma bitince, grub_main grub'ı normal moda taşır. Grub_normal_execute (grub-core / normal / main.c'den) son hazırlıkları tamamlar ve bir işletim sistemi seçmek için bir menü gösterir. Grub menü girişlerinden birini seçtiğimizde grub_menu_execute_entry çalıştırılır, grub'ın önyükleme komutunun çalıştırılması ve seçilen işletim sisteminin önyüklenmesi.
-Çekirdek önyükleme protokolünü okuyabileceğimiz gibi, önyükleyici, çekirdek kurulum kodundan 0x01f1 ofsetten başlayan çekirdek kurulum header'ının bazı alanlarını okumalı ve doldurmalıdır. Çekirdek header'ı  arch/86/boot/header.S,  aşağıdakilerden başlıyor:
+BIOS, bir Ã¶nyÃ¼kleme aygÄ±tÄ± seÃ§ti ve kontrolÃ¼ Ã¶nyÃ¼kleme kesimi koduna aktardÄ±ÄŸÄ± iÃ§in yÃ¼rÃ¼tme boot.img'den baÅŸlatÄ±lÄ±r. Bu kod, mevcut sÄ±nÄ±rlÄ± miktarda alan nedeniyle Ã§ok basittir ve GRUB 2'nin temel gÃ¶rÃ¼ntÃ¼sÃ¼nÃ¼n konumuna atlamak iÃ§in kullanÄ±lan bir iÅŸaretÃ§i iÃ§erir. Ã‡ekirdek imajÄ± diskboot.img ile baÅŸlar ve genellikle ilk bÃ¶lÃ¼mden hemen sonra kullanÄ±lmayan alana ilk bÃ¶lÃ¼mden Ã¶nce kaydedilir. YukarÄ±daki kod, GRUB 2'nin Ã§ekirdeÄŸini ve dosya sistemlerini iÅŸlemek iÃ§in kullanÄ±lan sÃ¼rÃ¼cÃ¼leri iÃ§eren Ã§ekirdek gÃ¶rÃ¼ntÃ¼sÃ¼nÃ¼n geri kalanÄ±nÄ± belleÄŸe yÃ¼kler. Ã‡ekirdek imajÄ±nÄ±n geri kalanÄ±nÄ± yÃ¼kledikten sonra, grub_main'i Ã§alÄ±ÅŸtÄ±rÄ±r.
+Grub_main konsolu baÅŸlatÄ±r, modÃ¼llerin temel adresini alÄ±r, kÃ¶k aygÄ±tÄ±nÄ± ayarlar, grub yapÄ±landÄ±rma dosyasÄ±nÄ± yÃ¼kler / ayrÄ±ÅŸtÄ±rÄ±r, modÃ¼lleri yÃ¼kler vb. Ã‡alÄ±ÅŸtÄ±rma bitince, grub_main grub'Ä± normal moda taÅŸÄ±r. Grub_normal_execute (grub-core / normal / main.c'den) son hazÄ±rlÄ±klarÄ± tamamlar ve bir iÅŸletim sistemi seÃ§mek iÃ§in bir menÃ¼ gÃ¶sterir. Grub menÃ¼ giriÅŸlerinden birini seÃ§tiÄŸimizde grub_menu_execute_entry Ã§alÄ±ÅŸtÄ±rÄ±lÄ±r, grub'Ä±n Ã¶nyÃ¼kleme komutunun Ã§alÄ±ÅŸtÄ±rÄ±lmasÄ± ve seÃ§ilen iÅŸletim sisteminin Ã¶nyÃ¼klenmesi.
+Ã‡ekirdek Ã¶nyÃ¼kleme protokolÃ¼nÃ¼ okuyabileceÄŸimiz gibi, Ã¶nyÃ¼kleyici, Ã§ekirdek kurulum kodundan 0x01f1 ofsetten baÅŸlayan Ã§ekirdek kurulum header'Ä±nÄ±n bazÄ± alanlarÄ±nÄ± okumalÄ± ve doldurmalÄ±dÄ±r. Ã‡ekirdek header'Ä±  arch/86/boot/header.S,  aÅŸaÄŸÄ±dakilerden baÅŸlÄ±yor:
 
  .globl hdr
 hdr:
@@ -154,59 +168,75 @@ hdr:
     root_dev:    .word 0
     boot_flag:   .word 0xAA55
 
-Önyükleyicinin bunu komut satırından alınan ya da hesaplanan değerlerle header'ların geri kalanını doldurması gerekir. (Çekirdek kurulum header'ının tüm alanlarına ilişkin açıklamaları tam olarak ele almayacağız, bunun yerine çekirdeğin bunları nasıl kullandığını tartıştığımızda önyükleme protokolündeki tüm alanların bir açıklamasını bulabilirsiniz.)
+Ã–nyÃ¼kleyicinin bunu komut satÄ±rÄ±ndan alÄ±nan ya da hesaplanan deÄŸerlerle header'larÄ±n geri kalanÄ±nÄ± doldurmasÄ± gerekir. (Ã‡ekirdek kurulum header'Ä±nÄ±n tÃ¼m alanlarÄ±na iliÅŸkin aÃ§Ä±klamalarÄ± tam olarak ele almayacaÄŸÄ±z, bunun yerine Ã§ekirdeÄŸin bunlarÄ± nasÄ±l kullandÄ±ÄŸÄ±nÄ± tartÄ±ÅŸtÄ±ÄŸÄ±mÄ±zda Ã¶nyÃ¼kleme protokolÃ¼ndeki tÃ¼m alanlarÄ±n bir aÃ§Ä±klamasÄ±nÄ± bulabilirsiniz.)
 
-Çekirdek önyükleme protokolünde görebileceğiniz gibi, çekirdek yüklendikten sonra bellek haritası aşağıdaki gibi olacaktır:
+Ã‡ekirdek Ã¶nyÃ¼kleme protokolÃ¼nde gÃ¶rebileceÄŸiniz gibi, Ã§ekirdek yÃ¼klendikten sonra bellek haritasÄ± aÅŸaÄŸÄ±daki gibi olacaktÄ±r:
 
          | Protected-mode kernel  |
+									
 100000   +------------------------+
+
          | I/O memory hole        |
+									
 0A0000   +------------------------+
+
          | Reserved for BIOS      | Leave as much as possible unused
          ~                        ~
          | Command line           | (Can also be below the X+10000 mark)
+									
 X+10000  +------------------------+
+
          | Stack/heap             | For use by the kernel real-mode code.
+									
 X+08000  +------------------------+
+
          | Kernel setup           | The kernel real-mode code.
+									
          | Kernel boot sector     | The kernel legacy boot sector.
        X +------------------------+
+							
          | Boot loader            | <- Boot sector entry point 0x7C00
+									
 001000   +------------------------+
+
+
          | Reserved for MBR/BIOS  |
 000800   +------------------------+
+
          | Typically used by MBR  |
 000600   +------------------------+
+
          | BIOS use only          |
+									
 000000   +------------------------+
 
 
-Yani, önyükleyici kontrolü çekirdeğe aktardığında şuradan başlar:
+Yani, Ã¶nyÃ¼kleyici kontrolÃ¼ Ã§ekirdeÄŸe aktardÄ±ÄŸÄ±nda ÅŸuradan baÅŸlar:
 
 X + sizeof(KernelBootSector) + 1
 
-Burada X, çekirdek önyükleme sektörünün yüklenmekte olduğu adresidir. Benim durumumda; X,  0x10000'dır. Bellek dökümünde görebileceğimiz gibi:
+Burada X, Ã§ekirdek Ã¶nyÃ¼kleme sektÃ¶rÃ¼nÃ¼n yÃ¼klenmekte olduÄŸu adresidir. Benim durumumda; X,  0x10000'dÄ±r. Bellek dÃ¶kÃ¼mÃ¼nde gÃ¶rebileceÄŸimiz gibi:
 
 resim
 
-Önyükleyici, Linux çekirdeğini belleğe yükledi, header alanlarını doldurdu ve karşılık gelen bellek adresine atladı. Artık doğrudan çekirdek kurulum koduna geçebiliriz.
+Ã–nyÃ¼kleyici, Linux Ã§ekirdeÄŸini belleÄŸe yÃ¼kledi, header alanlarÄ±nÄ± doldurdu ve karÅŸÄ±lÄ±k gelen bellek adresine atladÄ±. ArtÄ±k doÄŸrudan Ã§ekirdek kurulum koduna geÃ§ebiliriz.
 
-Çekirdek Kurulumunun Başlangıcı
+Ã‡ekirdek Kurulumunun BaÅŸlangÄ±cÄ±
 
-Son olarak, çekirdekteyiz! Teknik olarak, çekirdek henüz çalışmıyor; İlk olarak çekirdeği, bellek yöneticisini, süreç yöneticisini vb. Kurmamız gerekir. Çekirdek kurulumunun çalışması, _start'da arch / x86 / boot / header.S'den başlar. Önceden birkaç talimat olduğundan ilk bakışta biraz tuhaf. 
+Son olarak, Ã§ekirdekteyiz! Teknik olarak, Ã§ekirdek henÃ¼z Ã§alÄ±ÅŸmÄ±yor; Ä°lk olarak Ã§ekirdeÄŸi, bellek yÃ¶neticisini, sÃ¼reÃ§ yÃ¶neticisini vb. KurmamÄ±z gerekir. Ã‡ekirdek kurulumunun Ã§alÄ±ÅŸmasÄ±, _start'da arch / x86 / boot / header.S'den baÅŸlar. Ã–nceden birkaÃ§ talimat olduÄŸundan ilk bakÄ±ÅŸta biraz tuhaf. 
 
-Uzun zaman önce, Linux çekirdeği kendi önyükleyicisini kullanıyordu. Ancak şimdi, şu komutu çalıştırırsanız;
+Uzun zaman Ã¶nce, Linux Ã§ekirdeÄŸi kendi Ã¶nyÃ¼kleyicisini kullanÄ±yordu. Ancak ÅŸimdi, ÅŸu komutu Ã§alÄ±ÅŸtÄ±rÄ±rsanÄ±z;
 
 qemu-system-x86_64 vmlinuz-3.18-generic
 
 
-şunu göreceksiniz:
+ÅŸunu gÃ¶receksiniz:
 
 
 resim
 
 
-Aslında header.S, MZ'den başlar (yukarıdaki resme bakın), PE hata mesajını yazdıran ve aşağıdaki PE header'ı:
+AslÄ±nda header.S, MZ'den baÅŸlar (yukarÄ±daki resme bakÄ±n), PE hata mesajÄ±nÄ± yazdÄ±ran ve aÅŸaÄŸÄ±daki PE header'Ä±:
 
 #ifdef CONFIG_EFI_STUB
 # "MZ", MS-DOS header
@@ -221,16 +251,16 @@ pe_header:
     .word 0
 
 
-UEFI ile bir işletim sistemini yüklemek için buna ihtiyaç duyuyor. Şu anda bunun iç işleyişine bakmayacağız ve ilerleyen bölümlerde de bunu ele alacağız.
+UEFI ile bir iÅŸletim sistemini yÃ¼klemek iÃ§in buna ihtiyaÃ§ duyuyor. Åu anda bunun iÃ§ iÅŸleyiÅŸine bakmayacaÄŸÄ±z ve ilerleyen bÃ¶lÃ¼mlerde de bunu ele alacaÄŸÄ±z.
 
-Gerçek çekirdek kurulum giriş noktası şöyledir:
+GerÃ§ek Ã§ekirdek kurulum giriÅŸ noktasÄ± ÅŸÃ¶yledir:
 
 // header.S line 292
 .globl _start
 _start:
 
 
-Önyükleyici(grub2 ve diğerleri), bu noktayı (MZ'den 0x200 ofset) biliyor ve header.S'nin bir hata mesajı yazdıran .bstext bölümünden başlamasına rağmen, doğrudan ona bir sıçrama yapıyor:
+Ã–nyÃ¼kleyici(grub2 ve diÄŸerleri), bu noktayÄ± (MZ'den 0x200 ofset) biliyor ve header.S'nin bir hata mesajÄ± yazdÄ±ran .bstext bÃ¶lÃ¼mÃ¼nden baÅŸlamasÄ±na raÄŸmen, doÄŸrudan ona bir sÄ±Ã§rama yapÄ±yor:
 
 //
 // arch/x86/boot/setup.ld
@@ -240,7 +270,7 @@ _start:
 .bsdata : { *(.bsdata) }
 
 
-Çekirdek kurulum giriş noktası şöyledir:
+Ã‡ekirdek kurulum giriÅŸ noktasÄ± ÅŸÃ¶yledir:
 
  .globl _start
 _start:
@@ -251,41 +281,41 @@ _start:
     // rest of the header
     //
 
-Burada start_of_setup-1f noktasına atlayan bir jmp komut opcode (0xeb) görebilirsiniz. Nf gösteriminde 2f, aşağıdaki yerel 2: etiketini belirtir; Bizim durumumuzda, atlama sonrasında bulunan etiket 1 ve kurulum başlığının geri kalanını içeriyor. Kurulum başlığının hemen sonrasında, .entrytext bölümünü görüyoruz; bu bölüm, start_of_setup etiketinden başlıyor.
+Burada start_of_setup-1f noktasÄ±na atlayan bir jmp komut opcode (0xeb) gÃ¶rebilirsiniz. Nf gÃ¶steriminde 2f, aÅŸaÄŸÄ±daki yerel 2: etiketini belirtir; Bizim durumumuzda, atlama sonrasÄ±nda bulunan etiket 1 ve kurulum baÅŸlÄ±ÄŸÄ±nÄ±n geri kalanÄ±nÄ± iÃ§eriyor. Kurulum baÅŸlÄ±ÄŸÄ±nÄ±n hemen sonrasÄ±nda, .entrytext bÃ¶lÃ¼mÃ¼nÃ¼ gÃ¶rÃ¼yoruz; bu bÃ¶lÃ¼m, start_of_setup etiketinden baÅŸlÄ±yor.
 
-Aslında çalışan ilk kod budur (elbette önceki atlama talimatları hariç). Çekirdek kurulumu bootloader'dan kontrol aldıktan sonra, ilk jmp komutu, çekirdek gerçek Real Mode'unun başlangıcından itibaren 0x200 ofset'inde, yani ilk 512 bayttan sonra yer alır. Bu, hem Linux çekirdeği önyükleme protokolünü okuyabilir hem de grub2 kaynak kodunda görebiliriz:
+AslÄ±nda Ã§alÄ±ÅŸan ilk kod budur (elbette Ã¶nceki atlama talimatlarÄ± hariÃ§). Ã‡ekirdek kurulumu bootloader'dan kontrol aldÄ±ktan sonra, ilk jmp komutu, Ã§ekirdek gerÃ§ek Real Mode'unun baÅŸlangÄ±cÄ±ndan itibaren 0x200 ofset'inde, yani ilk 512 bayttan sonra yer alÄ±r. Bu, hem Linux Ã§ekirdeÄŸi Ã¶nyÃ¼kleme protokolÃ¼nÃ¼ okuyabilir hem de grub2 kaynak kodunda gÃ¶rebiliriz:
 
 segment = grub_linux_real_target >> 4;
 state.gs = state.fs = state.es = state.ds = state.ss = segment;
 state.cs = segment + 0x20;
 
-Bu, çekirdek kurulumu başladıktan sonra segment kayıtlarının aşağıdaki değerleri içermesi anlamına gelir:
+Bu, Ã§ekirdek kurulumu baÅŸladÄ±ktan sonra segment kayÄ±tlarÄ±nÄ±n aÅŸaÄŸÄ±daki deÄŸerleri iÃ§ermesi anlamÄ±na gelir:
 
 gs = fs = es = ds = ss = 0x1000
 cs = 0x1020
 
-Benim durumumda, çekirdek 0x10000'a yüklendi.
+Benim durumumda, Ã§ekirdek 0x10000'a yÃ¼klendi.
 
-Start_of_setup atlamasının ardından, çekirdeğin aşağıdakileri yapması gerekir:
+Start_of_setup atlamasÄ±nÄ±n ardÄ±ndan, Ã§ekirdeÄŸin aÅŸaÄŸÄ±dakileri yapmasÄ± gerekir:
 
-- Tüm segment kayıt değerlerinin eşit olduğundan emin ol
-- Gerekirse doğru bir yığını ayarla.
+- TÃ¼m segment kayÄ±t deÄŸerlerinin eÅŸit olduÄŸundan emin ol
+- Gerekirse doÄŸru bir yÄ±ÄŸÄ±nÄ± ayarla.
 - Bss'yi ayarla
-- Main.c dosyasındaki C koduna atla
+- Main.c dosyasÄ±ndaki C koduna atla
 
-Şimdi uygulamaya bakalım.
+Åimdi uygulamaya bakalÄ±m.
 
 
 Segment registers align
 
 
-Her şeyden önce, çekirdek ds ve es segment kayıtlarının aynı adrese işaret etmesini sağlar. Sonra, cld yönergesi kullanarak yön bayrağını temizler:
+Her ÅŸeyden Ã¶nce, Ã§ekirdek ds ve es segment kayÄ±tlarÄ±nÄ±n aynÄ± adrese iÅŸaret etmesini saÄŸlar. Sonra, cld yÃ¶nergesi kullanarak yÃ¶n bayraÄŸÄ±nÄ± temizler:
 
  movw    %ds, %ax
     movw    %ax, %es
     cld
 
-Daha önce yazmış olduğum gibi, grub2, çekirdeği kurulum kodunu 0x10000 adresinde ve cs'yi 0x1020'de yükler; çünkü çalıştırma dosyanın başından başlamaz;
+Daha Ã¶nce yazmÄ±ÅŸ olduÄŸum gibi, grub2, Ã§ekirdeÄŸi kurulum kodunu 0x10000 adresinde ve cs'yi 0x1020'de yÃ¼kler; Ã§Ã¼nkÃ¼ Ã§alÄ±ÅŸtÄ±rma dosyanÄ±n baÅŸÄ±ndan baÅŸlamaz;
 
 _start:
     .byte 0xeb
@@ -297,25 +327,25 @@ pushw   %ds
     pushw   $6f
     lretw
 
-Bu, ds değerini 6 etiketinin adresiyle yığına iter ve lretw komutunu çalıştırır. lretw komutu çağırıldığında, etiket 6'nın adresini komut gösterici kaydına yükler ve cs'yi ds değeriyle yükler. Daha sonra, ds ve cs aynı değerleri alacaktır.
+Bu, ds deÄŸerini 6 etiketinin adresiyle yÄ±ÄŸÄ±na iter ve lretw komutunu Ã§alÄ±ÅŸtÄ±rÄ±r. lretw komutu Ã§aÄŸÄ±rÄ±ldÄ±ÄŸÄ±nda, etiket 6'nÄ±n adresini komut gÃ¶sterici kaydÄ±na yÃ¼kler ve cs'yi ds deÄŸeriyle yÃ¼kler. Daha sonra, ds ve cs aynÄ± deÄŸerleri alacaktÄ±r.
 
 Stack Kurulumu
 
-Kurulum kodunun neredeyse tamamı gerçek modda C dil ortamına hazırlanıyor. Bir sonraki adım ss kayıt değerini kontrol etmek ve eğer yanlışsa düzeltmektir:
+Kurulum kodunun neredeyse tamamÄ± gerÃ§ek modda C dil ortamÄ±na hazÄ±rlanÄ±yor. Bir sonraki adÄ±m ss kayÄ±t deÄŸerini kontrol etmek ve eÄŸer yanlÄ±ÅŸsa dÃ¼zeltmektir:
 
  movw    %ss, %dx
     cmpw    %ax, %dx
     movw    %sp, %dx
     je      2f
 
-Bu, 3 farklı senaryonun ortaya çıkmasına neden olabilir:
-- Ss'in geçerli değeri 0x10000'tür (cs'in yanındaki tüm diğer bölüm kayıtları gibi)
-- Ss geçersiz ve CAN_USE_HEAP bayrağı ayarlanmış (aşağıya bakın)
-- Ss geçersiz ve CAN_USE_HEAP bayrağı ayarlanmamış (aşağıya bakın)
+Bu, 3 farklÄ± senaryonun ortaya Ã§Ä±kmasÄ±na neden olabilir:
+- Ss'in geÃ§erli deÄŸeri 0x10000'tÃ¼r (cs'in yanÄ±ndaki tÃ¼m diÄŸer bÃ¶lÃ¼m kayÄ±tlarÄ± gibi)
+- Ss geÃ§ersiz ve CAN_USE_HEAP bayraÄŸÄ± ayarlanmÄ±ÅŸ (aÅŸaÄŸÄ±ya bakÄ±n)
+- Ss geÃ§ersiz ve CAN_USE_HEAP bayraÄŸÄ± ayarlanmamÄ±ÅŸ (aÅŸaÄŸÄ±ya bakÄ±n)
 
-Bu üç senaryonun hepsine sırayla bakalım:
+Bu Ã¼Ã§ senaryonun hepsine sÄ±rayla bakalÄ±m:
 
-- Ss'nin doğru adrese sahip. (0x10000). Bu durumda, etiket 2'ye gidiyoruz:
+- Ss'nin doÄŸru adrese sahip. (0x10000). Bu durumda, etiket 2'ye gidiyoruz:
 
 2:  andw    $~3, %dx
     jnz     3f
@@ -324,18 +354,18 @@ Bu üç senaryonun hepsine sırayla bakalım:
     movzwl  %dx, %esp
     sti
 
-Burada, dx (bootloader tarafından verilen sp içeriyor) 4 bayt'a ve sıfır olup olmadığına ilişkin bir hizaya geldiklerini görebiliriz. Sıfır ise, dx'e 0xfffc (64 KB'lik maksimum segment boyutundan önce 4 bayt hizalı adres) koyarız. Sıfır değilse, önyükleyici (benim durumumda 0xf7f4) tarafından verilen sp'yi kullanmaya devam ederiz. Bundan sonra, ax değerini 0x10000'lük doğru segment adresini ss içine yerleştirdik ve doğru bir sp ayarladı. Artık doğru bir yığınımız var:
+Burada, dx (bootloader tarafÄ±ndan verilen sp iÃ§eriyor) 4 bayt'a ve sÄ±fÄ±r olup olmadÄ±ÄŸÄ±na iliÅŸkin bir hizaya geldiklerini gÃ¶rebiliriz. SÄ±fÄ±r ise, dx'e 0xfffc (64 KB'lik maksimum segment boyutundan Ã¶nce 4 bayt hizalÄ± adres) koyarÄ±z. SÄ±fÄ±r deÄŸilse, Ã¶nyÃ¼kleyici (benim durumumda 0xf7f4) tarafÄ±ndan verilen sp'yi kullanmaya devam ederiz. Bundan sonra, ax deÄŸerini 0x10000'lÃ¼k doÄŸru segment adresini ss iÃ§ine yerleÅŸtirdik ve doÄŸru bir sp ayarladÄ±. ArtÄ±k doÄŸru bir yÄ±ÄŸÄ±nÄ±mÄ±z var:
 
 resim
 
-- İkinci senaryoda, (ss! = Ds). Önce, _end'in değerini (kurulum kodunun sonundaki adres) dx'e koyar ve yığını kullanıp kullanamayacağımızı test etmek için testb komutunu kullanarak loadflags başlık alanını kontrol ederiz. Loadflags, aşağıdaki gibi tanımlanan bir bit maskesi header'ı dır:
+- Ä°kinci senaryoda, (ss! = Ds). Ã–nce, _end'in deÄŸerini (kurulum kodunun sonundaki adres) dx'e koyar ve yÄ±ÄŸÄ±nÄ± kullanÄ±p kullanamayacaÄŸÄ±mÄ±zÄ± test etmek iÃ§in testb komutunu kullanarak loadflags baÅŸlÄ±k alanÄ±nÄ± kontrol ederiz. Loadflags, aÅŸaÄŸÄ±daki gibi tanÄ±mlanan bir bit maskesi header'Ä± dÄ±r:
 
 #define LOADED_HIGH     (1<<0)
 #define QUIET_FLAG      (1<<5)
 #define KEEP_SEGMENTS   (1<<6)
 #define CAN_USE_HEAP    (1<<7)
 
-Ve önyükleme protokolünü okuyabildiğimiz için,
+Ve Ã¶nyÃ¼kleme protokolÃ¼nÃ¼ okuyabildiÄŸimiz iÃ§in,
 
 Field name: loadflags
 
@@ -347,26 +377,26 @@ Field name: loadflags
     functionality will be disabled.
 
 
-CAN_USE_HEAP biti ayarlanmışsa, heap_end_ptr'ı dx'e (_end'i işaret eder) yerleştirir ve ona STACK_SIZE (minimum yığın boyutu, 512 bayt) ekleriz. Bundan sonra dx taşınmazsa (taşınmayacak, dx = _end + 512), etiket 2'ye atlanır (önceki durumda olduğu gibi) ve doğru bir yığın oluşur.
+CAN_USE_HEAP biti ayarlanmÄ±ÅŸsa, heap_end_ptr'Ä± dx'e (_end'i iÅŸaret eder) yerleÅŸtirir ve ona STACK_SIZE (minimum yÄ±ÄŸÄ±n boyutu, 512 bayt) ekleriz. Bundan sonra dx taÅŸÄ±nmazsa (taÅŸÄ±nmayacak, dx = _end + 512), etiket 2'ye atlanÄ±r (Ã¶nceki durumda olduÄŸu gibi) ve doÄŸru bir yÄ±ÄŸÄ±n oluÅŸur.
 
 resim
 
 
-CAN_USE_HEAP ayarlanmadığında _end ile _end + STACK_SIZE arasında en az bir yığın kullanırız:
+CAN_USE_HEAP ayarlanmadÄ±ÄŸÄ±nda _end ile _end + STACK_SIZE arasÄ±nda en az bir yÄ±ÄŸÄ±n kullanÄ±rÄ±z:
 
 resim
 
 BSS Kurulumu
 
 
-Ana C koduna atlayabilmemiz için gerçekleşmesi gereken son iki adım BSS alanını kuruyor ve "sihirli" imzayı kontrol ediyor. İlk olarak imza kontrolü:
+Ana C koduna atlayabilmemiz iÃ§in gerÃ§ekleÅŸmesi gereken son iki adÄ±m BSS alanÄ±nÄ± kuruyor ve "sihirli" imzayÄ± kontrol ediyor. Ä°lk olarak imza kontrolÃ¼:
 
 cmpl    $0x5a5aaa55, setup_sig
     jne     setup_bad
 
-Bu, setup_sig'yi sihirli sayı 0x5a5aaa55 ile karşılaştırır. Eşit değillerse ölümcül bir hata bildirilir. Sihirli sayı eşleşirse, bir dizi doğru bölüm kaydı ve bir yığımız olduğunu bilerek, yalnızca C koduna atlamadan önce BSS bölümünü kurmamız gerekir.
+Bu, setup_sig'yi sihirli sayÄ± 0x5a5aaa55 ile karÅŸÄ±laÅŸtÄ±rÄ±r. EÅŸit deÄŸillerse Ã¶lÃ¼mcÃ¼l bir hata bildirilir. Sihirli sayÄ± eÅŸleÅŸirse, bir dizi doÄŸru bÃ¶lÃ¼m kaydÄ± ve bir yÄ±ÄŸÄ±mÄ±z olduÄŸunu bilerek, yalnÄ±zca C koduna atlamadan Ã¶nce BSS bÃ¶lÃ¼mÃ¼nÃ¼ kurmamÄ±z gerekir.
 
-BSS bölümü statik olarak ayrılmış, başlatılmamış verileri depolamak için kullanılır. Linux dikkatli bir şekilde bu bellek alanını aşağıdaki kod kullanılarak sıfırlanmasını sağlar:
+BSS bÃ¶lÃ¼mÃ¼ statik olarak ayrÄ±lmÄ±ÅŸ, baÅŸlatÄ±lmamÄ±ÅŸ verileri depolamak iÃ§in kullanÄ±lÄ±r. Linux dikkatli bir ÅŸekilde bu bellek alanÄ±nÄ± aÅŸaÄŸÄ±daki kod kullanÄ±larak sÄ±fÄ±rlanmasÄ±nÄ± saÄŸlar:
 
  movw    $__bss_start, %di
     movw    $_end+3, %cx
@@ -375,26 +405,26 @@ BSS bölümü statik olarak ayrılmış, başlatılmamış verileri depolamak için kullanı
     shrw    $2, %cx
     rep; stosl
 
-İlk olarak, __bss_start adresi di'ye taşınır. Daha sonra, _end + 3 adresi (+3 - 4 bayta hizalanır) cx'e taşınır. Eax kaydı silinir (bir xor komutu kullanılarak) ve bss bölüm boyutu (cx-di) hesaplanır ve cx'e yerleştirilir. Daha sonra, cx dörde bölünür (bir 'word' boyutu) ve stosl talimatı eax (sıfır) değerini di'nin gösterdiği adrese depolayarak di'yi dört arttırarak tekrar cx'e kadar tekrarlar Sıfıra ulaşır). Bu kodun net etkisi, sıfırların __bss_start'dan _end'e bellekteki tüm kelimeleri kullanarak yazıldığıdır:
+Ä°lk olarak, __bss_start adresi di'ye taÅŸÄ±nÄ±r. Daha sonra, _end + 3 adresi (+3 - 4 bayta hizalanÄ±r) cx'e taÅŸÄ±nÄ±r. Eax kaydÄ± silinir (bir xor komutu kullanÄ±larak) ve bss bÃ¶lÃ¼m boyutu (cx-di) hesaplanÄ±r ve cx'e yerleÅŸtirilir. Daha sonra, cx dÃ¶rde bÃ¶lÃ¼nÃ¼r (bir 'word' boyutu) ve stosl talimatÄ± eax (sÄ±fÄ±r) deÄŸerini di'nin gÃ¶sterdiÄŸi adrese depolayarak di'yi dÃ¶rt arttÄ±rarak tekrar cx'e kadar tekrarlar SÄ±fÄ±ra ulaÅŸÄ±r). Bu kodun net etkisi, sÄ±fÄ±rlarÄ±n __bss_start'dan _end'e bellekteki tÃ¼m kelimeleri kullanarak yazÄ±ldÄ±ÄŸÄ±dÄ±r:
 
 resim
 
 Main'e Atlamak 
 
-İşte hepsi bu - yığın ve BSS'ye sahibiz, bu yüzden main() C metoduna atlayabiliriz:
+Ä°ÅŸte hepsi bu - yÄ±ÄŸÄ±n ve BSS'ye sahibiz, bu yÃ¼zden main() C metoduna atlayabiliriz:
 
  calll main
 
-Main() metodu arch/ x86/ boot/main.c dosyasında bulunur. Bir sonraki bölümde bunun ne yaptığını okuyabilirsiniz.
+Main() metodu arch/ x86/ boot/main.c dosyasÄ±nda bulunur. Bir sonraki bÃ¶lÃ¼mde bunun ne yaptÄ±ÄŸÄ±nÄ± okuyabilirsiniz.
 
-Sonuç
+SonuÃ§
 
-Linux-insides hakkındaki ilk yazının sonuna geldik. Sorularınız veya önerileriniz varsa, @0xAX twitter hesabımdan, mail yoluyla veya GitHub'da isuue açarak bana ulaşabilirsiniz. Sonraki bölümde Linux çekirdeği setup'ındaki , memset, memcpy, initialprintk, konsol uygulaması ve başlatılması gibi bellek rutinlerini uygulayan ilk C kodunu ve çok daha fazlasını göreceğiz. İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen linux-inside'a PR gönderin.
+Linux-insides hakkÄ±ndaki ilk yazÄ±nÄ±n sonuna geldik. SorularÄ±nÄ±z veya Ã¶nerileriniz varsa, @0xAX twitter hesabÄ±mdan, mail yoluyla veya GitHub'da isuue aÃ§arak bana ulaÅŸabilirsiniz. Sonraki bÃ¶lÃ¼mde Linux Ã§ekirdeÄŸi setup'Ä±ndaki , memset, memcpy, initialprintk, konsol uygulamasÄ± ve baÅŸlatÄ±lmasÄ± gibi bellek rutinlerini uygulayan ilk C kodunu ve Ã§ok daha fazlasÄ±nÄ± gÃ¶receÄŸiz. Ä°ngilizce ana dilim deÄŸil ve bu durum iÃ§in Ã¶zÃ¼r dilerim. Herhangi bir hata bulursanÄ±z lÃ¼tfen linux-inside'a PR gÃ¶nderin.
 
 Linkler
 
 - Intel 80386 programmer's reference manual 1986
-- Minimal Boot Loader for Intel® Architecture
+- Minimal Boot Loader for IntelÂ® Architecture
 - 8086
 - 80386
 - Reset vector
