@@ -184,7 +184,7 @@ Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını
          boot_flag:   .word 0xAA55
 
 Önyükleyicinin bunu komut satırından alınan ya da hesaplanan değerlerle header'ların geri kalanını doldurması gerekir. (Çekirdek kurulum header'ının tüm alanlarına ilişkin açıklamaları tam olarak ele almayacağız, bunun yerine çekirdeğin bunları nasıl kullandığını tartıştığımızda önyükleme protokolündeki tüm alanların bir açıklamasını bulabilirsiniz.)  
-
+ 
 
 Çekirdek önyükleme protokolünde görebileceğiniz gibi, çekirdek yüklendikten sonra bellek haritası aşağıdaki gibi olacaktır:
 
@@ -194,10 +194,10 @@ Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını
              | I/O memory hole        |
      0A0000   +------------------------+
              | Reserved for BIOS      | Leave as much as possible unused
-             ~                        ~
+              ~                        ~
              | Command line           | (Can also be below the X+10000 mark)
              X+10000  +------------------------+
-             | Stack/heap             | For use by the kernel real-mode code.
+              | Stack/heap             | For use by the kernel real-mode code.
 
 X+08000  +------------------------+
              | Kernel setup           | The kernel real-mode code.
@@ -209,7 +209,7 @@ X+08000  +------------------------+
              000800   +------------------------+
              | Typically used by MBR  |
              000600   +------------------------+
-             | BIOS use only          |
+              | BIOS use only          |
              000000   +------------------------+
 
 
@@ -231,7 +231,7 @@ Son olarak, çekirdekteyiz! Teknik olarak, çekirdek henüz çalışmıyor; İlk
 
 Uzun zaman önce, Linux çekirdeği kendi önyükleyicisini kullanıyordu. Ancak şimdi, şu komutu çalıştırırsanız;
 
-qemu-system-x86_64 vmlinuz-3.18-generic
+    qemu-system-x86_64 vmlinuz-3.18-generic
 
 
 şunu göreceksiniz:
@@ -259,29 +259,29 @@ UEFI ile bir işletim sistemini yüklemek için buna ihtiyaç duyuyor. Şu anda 
 
 Gerçek çekirdek kurulum giriş noktası şöyledir:
 
-// header.S line 292
-.globl _start
-_start:
+     // header.S line 292
+     .globl _start
+     _start:
 
 
 Önyükleyici(grub2 ve diğerleri), bu noktayı (MZ'den 0x200 ofset) biliyor ve header.S'nin bir hata mesajı yazdıran .bstext bölümünden başlamasına rağmen, doğrudan ona bir sıçrama yapıyor:
 
-  //
-  // arch/x86/boot/setup.ld
-  //
-  . = 0;                    // current position
-  .bstext : { *(.bstext) }  // put .bstext section to position 0
-   .bsdata : { *(.bsdata) }
+     //
+     // arch/x86/boot/setup.ld
+     //
+     . = 0;                    // current position
+      .bstext : { *(.bstext) }  // put .bstext section to position 0
+     .bsdata : { *(.bsdata) }
 
 
 Çekirdek kurulum giriş noktası şöyledir:
 
     .globl _start
-   _start:
+    _start:
       .byte  0xeb
       .byte  start_of_setup-1f
      1:
-       //
+        //
        // rest of the header
        //
 
@@ -289,14 +289,14 @@ Burada start_of_setup-1f noktasına atlayan bir jmp komut opcode (0xeb) görebil
 
 Aslında çalışan ilk kod budur (elbette önceki atlama talimatları hariç). Çekirdek kurulumu bootloader'dan kontrol aldıktan sonra, ilk jmp komutu, çekirdek gerçek Real Mode'unun başlangıcından itibaren 0x200 ofset'inde, yani ilk 512 bayttan sonra yer alır. Bu, hem Linux çekirdeği önyükleme protokolünü okuyabilir hem de grub2 kaynak kodunda görebiliriz:
 
-   segment = grub_linux_real_target >> 4;
-   state.gs = state.fs = state.es = state.ds = state.ss = segment;
-   state.cs = segment + 0x20;
+     segment = grub_linux_real_target >> 4;
+     state.gs = state.fs = state.es = state.ds = state.ss = segment;
+      state.cs = segment + 0x20;
 
 Bu, çekirdek kurulumu başladıktan sonra segment kayıtlarının aşağıdaki değerleri içermesi anlamına gelir:
-
-   gs = fs = es = ds = ss = 0x1000
-   cs = 0x1020
+ 
+     gs = fs = es = ds = ss = 0x1000
+     cs = 0x1020
 
 Benim durumumda, çekirdek 0x10000'a yüklendi.
 
@@ -309,25 +309,25 @@ Start_of_setup atlamasının ardından, çekirdeğin aşağıdakileri yapması g
 
 Şimdi uygulamaya bakalım.
 
-
+ 
 Segment registers align
 
 
 Her şeyden önce, çekirdek ds ve es segment kayıtlarının aynı adrese işaret etmesini sağlar. Sonra, cld yönergesi kullanarak yön bayrağını temizler:
 
- movw    %ds, %ax
+    movw    %ds, %ax
     movw    %ax, %es
     cld
 
 Daha önce yazmış olduğum gibi, grub2, çekirdeği kurulum kodunu 0x10000 adresinde ve cs'yi 0x1020'de yükler; çünkü çalıştırma dosyanın başından başlamaz;
 
-_start:
+    _start:
     .byte 0xeb
     .byte start_of_setup-1f
-jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
+    jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
 
 
-pushw   %ds
+    pushw   %ds
     pushw   $6f
     lretw
 
@@ -337,7 +337,7 @@ Stack Kurulumu
 
 Kurulum kodunun neredeyse tamamı gerçek modda C dil ortamına hazırlanıyor. Bir sonraki adım ss kayıt değerini kontrol etmek ve eğer yanlışsa düzeltmektir:
 
- movw    %ss, %dx
+    movw    %ss, %dx
     cmpw    %ax, %dx
     movw    %sp, %dx
     je      2f
@@ -352,11 +352,11 @@ Bu üç senaryonun hepsine sırayla bakalım:
 
 - Ss'nin doğru adrese sahip. (0x10000). Bu durumda, etiket 2'ye gidiyoruz:
 
-2:  andw    $~3, %dx
-    jnz     3f
-    movw    $0xfffc, %dx
-3:  movw    %ax, %ss
-    movzwl  %dx, %esp
+     2:  andw    $~3, %dx
+     jnz     3f
+     movw    $0xfffc, %dx
+    3:  movw    %ax, %ss
+     movzwl  %dx, %esp
     sti
 
 Burada, dx (bootloader tarafından verilen sp içeriyor) 4 bayt'a ve sıfır olup olmadığına ilişkin bir hizaya geldiklerini görebiliriz. Sıfır ise, dx'e 0xfffc (64 KB'lik maksimum segment boyutundan önce 4 bayt hizalı adres) koyarız. Sıfır değilse, önyükleyici (benim durumumda 0xf7f4) tarafından verilen sp'yi kullanmaya devam ederiz. Bundan sonra, ax değerini 0x10000'lük doğru segment adresini ss içine yerleştirdik ve doğru bir sp ayarladı. Artık doğru bir yığınımız var:
