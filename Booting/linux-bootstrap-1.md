@@ -1,46 +1,22 @@
-<<<<<<< HEAD
-Daha onceki blog yazilarimi okuduysaniz, bir suredir low level programlamayla ilgilendigimi gorursunuz. Linux icin x86_64 Assembly programlamayla ilgili yaz�lar yazd�m ayn� zamanda Linux kaynak koduna dalmaya basladim. low-level programlarin; nas�l isledigini, bilgisayar�mda nas�l calistigini, bellekte nasil yer aldiklarini, cekirdegin surecleri ve bellegi nasil yonettigini, network stack'in low-level'da nasil calistigini ve diger pek cok seyi anlamaya buyuk bir ilgim var. Bu nedenle, x86_64 icin Linux cekirdegi hakk�nda bir dizi yazi yazmaya karar verdim. 
-
-Profesyonel bir cekirdek hacker'� degilim. Cekirdek kodu yazmak benim gercek isim degil. Bu benim icin sadece bir hobi. Low-level'dan hoslaniyorum ve bunun nasil calistigini gormek ilgimi cekiyor. Bu nedenle kafa karistirici bir sey gorurseniz veya herhangi bir sorunuz/fikriniz varsa, @0xAX twitter hesabimban, mail yoluyla veya GitHub'da issue olusturarak bana ulasabilirsiniz. Buna minnettar olurum. Butun yazilarim linux-insides GitHub sayfasindan erisilebilir olacak. �ngilizce dil bilgimle veya yazi icerigi ile ilgili bir hata fark ederseniz, Pull Request gondermekten cekinmeyin. 
-=======
 Daha onceki blog yazilarimi okuduysaniz, bir suredir low level programlamayla ilgilendigimi gorursunuz. Linux icin x86_64 Assembly programlamayla ilgili yazılar yazdım aynı zamanda Linux kaynak koduna dalmaya basladim. low-level programlarin; nasıl isledigini, bilgisayarımda nasıl calistigini, bellekte nasil yer aldiklarini, cekirdegin surecleri ve bellegi nasil yonettigini, network stack'in low-level'da nasil calistigini ve diger pek cok seyi anlamaya buyuk bir ilgim var. Bu nedenle, x86_64 icin Linux cekirdegi hakkında bir dizi yazi yazmaya karar verdim. 
 
 Profesyonel bir cekirdek hacker'ı degilim. Cekirdek kodu yazmak benim gercek isim degil. Bu benim icin sadece bir hobi. Low-level'dan hoslaniyorum ve bunun nasil calistigini gormek ilgimi cekiyor. Bu nedenle kafa karistirici bir sey gorurseniz veya herhangi bir sorunuz/fikriniz varsa, @0xAX twitter hesabimban, mail yoluyla veya GitHub'da issue olusturarak bana ulasabilirsiniz. Buna minnettar olurum. Butun yazilarim linux-insides GitHub sayfasindan erisilebilir olacak. İngilizce dil bilgimle veya yazi icerigi ile ilgili bir hata fark ederseniz, Pull Request gondermekten cekinmeyin. 
->>>>>>> origin/master
 
 Unutmayin ki; bu resmi bir dokumantasyon degildir, sadece ogrendiklerimi paylasiyorum. 
 
 Size gerekli olan beceriler;
 
-<<<<<<< HEAD
    - C programlama dili bilgisi
    - Assembly kod bilgisi (AT&T soz dizimi)
-Bazi araclar� ogrenmeye baslarsaniz, yazilarim s�ras�nda bazi k�s�mlari zaten aciklamaya calisacagim. Pekala, giri� k�sm�n burada son buluyor. �imdi �ekirdek ve low-level'a dalmaya ba�layabiliriz. 
-
-Kodlar�n tamam� asl�nda 3.18 �ekirde�i i�in. De�i�iklikler olursa yaz�lar�m� buna g�re g�ncelleyece�im. 
-
-Sihirli G�� D��mesi, Sonras�nda Neler Oluyor?
-
-Bu Linux �ekirde�i ile ilgili bir dizi yaz� olsa da, �ekirdek kodundan ba�layaca��z - en az�ndan bu paragrafta. Diz�st� veya masa�st� bilgisayar�n�zdaki sihirli g�� d��mesine bast���n�z anda �al��maya ba�lar. Anakart g�� kayna��na bir sinyal g�nderiyor. Sinyali ald�ktan sonra g�� kayna�� bilgisayara do�ru miktarda elektrik sa�lar. Anakart g�� iyi sinyalini ald�ktan sonra, CPU'yu ba�latmaya �al���r. ��lemci t�m kalan veriyi kay�tlar�nda s�f�rlar ve her biri i�in �nceden tan�mlanm�� de�erleri ayarlar.
-
-80386 ve sonraki CPU'lar, bilgisayar s�f�rland�ktan sonra CPU kay�tlar�nda a�a��daki �nceden tan�ml� verileri tan�mlar:
-=======
-- C programlama dili bilgisi
-- Assembly kod bilgisi (AT&T soz dizimi)
-
 Bazi aracları ogrenmeye baslarsaniz, yazilarim sırasında bazi kısımlari zaten aciklamaya calisacagim. Pekala, giriş kısmın burada son buluyor. Şimdi çekirdek ve low-level'a dalmaya başlayabiliriz. 
 
 Kodların tamamı aslında 3.18 çekirdeği için. Değişiklikler olursa yazılarımı buna göre güncelleyeceğim. 
 
 Sihirli Güç Düğmesi, Sonrasında Neler Oluyor?
 
-Bu Linux çekirdeği ile ilgili bir dizi yazı olsa da, çekirdek kodundan başlayacağız - en azından bu paragrafta. Dizüstü veya masaüstü bilgisayarınızdaki sihirli güç düğmesine bastığınız anda çalışmaya başlar. Anakart güç kaynağına bir sinyal gönderiyor. Sinyali aldıktan sonra güç kaynağı bilgisayara doğru miktarda elektrik sağlar. Anakart güç iyi sinyalini aldıktan sonra, CPU'yu başlatmaya çalışır.
-
-İşlemci tüm kalan veriyi kayıtlarında sıfırlar ve her biri için önceden tanımlanmış değerleri ayarlar.
+Bu Linux çekirdeği ile ilgili bir dizi yazı olsa da, çekirdek kodundan başlayacağız - en azından bu paragrafta. Dizüstü veya masaüstü bilgisayarınızdaki sihirli güç düğmesine bastığınız anda çalışmaya başlar. Anakart güç kaynağına bir sinyal gönderiyor. Sinyali aldıktan sonra güç kaynağı bilgisayara doğru miktarda elektrik sağlar. Anakart güç iyi sinyalini aldıktan sonra, CPU'yu başlatmaya çalışır. İşlemci tüm kalan veriyi kayıtlarında sıfırlar ve her biri için önceden tanımlanmış değerleri ayarlar.
 
 80386 ve sonraki CPU'lar, bilgisayar sıfırlandıktan sonra CPU kayıtlarında aşağıdaki önceden tanımlı verileri tanımlar:
-
->>>>>>> origin/master
 
 
     IP          0xfff0
@@ -49,7 +25,6 @@ Bu Linux çekirdeği ile ilgili bir dizi yazı olsa da, çekirdek kodundan başl
 
 
 İşlemci Real Mode'da çalışmaya başlar. Biraz geriye dönelim ve bu modda bellek bölütlemeyi anlamaya çalışalım. Real Mode, tüm x86 uyumlu işlemcilerde, 8086'dan modern Intel 64 bit CPU'lara kadar desteklenir. 8086 işlemci, 20 bitlik bir adres veri yoluna sahiptir, bu da 0-0x100000 adres alanı (1 megabayt) ile çalışabileceği anlamına gelir. Ancak, yalnızca maksimum 2 ^ 16 - 1 adresine veya 0xffff (64 kilobayt) olan 16 bitlik yazmaçlara sahiptir. Bellek bölütleme, mevcut tüm adres alanını kullanmak için kullanılır. Tüm bellek, 65536 bayt (64 KB) küçük, sabit boyutlu bölümlere ayrılmıştır. 16 KB'lık yazmaçlarla 64 KB'ın üstündeki hafızayı ele alamayacağımızdan, alternatif bir yöntem tasarlanmıştır. Bir adres, iki bölümden oluşur: bir taban adresi olan bir Segment Selector ve bu taban adresinden bir uzaklık. Real Mode'da, bir Segment Selector'ın ilişkili taban adresi Segment Selector * 16'dır. Dolayısıyla, bellekte fiziksel bir adres almak için Segment Selector parçayı 16 ile çarpıp ofset eklemeliyiz:
-
 
 
     PhysicalAddress = Segment Selector * 16 + Offset
@@ -67,22 +42,14 @@ Ancak, en büyük Segment Selector'ını ve offsetini 0xffff:0xffff olarak alır
 
  Real Mode'da yalnızca bir megabayta erişilebildiğinden; 0x10ffef, A20'nin devre dışı kalmasıyla 0x00ffef'e dönüşecek.
 
-<<<<<<< HEAD
 
-Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register de�erlerini tart��maya geri d�nelim: 
+Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register değerlerini tartışmaya geri dönelim: 
 
-=======
-Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register değerlerini tartışmaya geri dönelim:
->>>>>>> origin/master
 
 CS kaydı iki bölümden oluşur: Görünür Segment Selector ve gizli taban adresi. Taban adresi genellikle 16 ile Segment Selector değer çarpılarak oluşturulurken, bir donanım sıfırlama sırasında CS kayıttaki Segment Selector 0xf000 ile yüklenir ve taban adresi 0xffff0000 ile yüklenir; Işlemci, CS değiştirilinceye kadar bu özel taban adresini kullanır.
 
-<<<<<<< HEAD
 
-Ba�lang�� adresi; taban adresi, EIP kayd�ndaki de�ere eklenerek olu�turulmu�tur:
-=======
 Başlangıç adresi; taban adresi, EIP kaydındaki değere eklenerek oluşturulmuştur:
->>>>>>> origin/master
 
     >>> 0xffff0000 + 0xfff0
     '0xfffffff0'
@@ -115,7 +82,6 @@ Burada, 0xe9 olan jmp komutunun opcode'u ve _start-(. + 2) adresindeki hedef adr
 
 
 Şimdi BIOS başatılıyor; BIOS'u başlatıp denetledikten sonra BIOS'un önyüklenebilir bir aygıt bulması gerekir. Bir önyükleme emri, BIOS'un hangi aygıtlardan önyükleme yapmaya çalıştığını kontrol eden BIOS yapılandırmasında saklanır. BIOS bir sabit diskten önyükleme yapmaya çalışırken bir önyükleme sektörü bulmaya çalışıyor. MBR bölüm düzeniyle bölünmüş sabit sürücüler üzerinde önyükleme sektörü, her sektör 512 bayt olan ilk sektörün ilk 446 baytında depolanır. İlk sektörün son iki baytı 0x55 ve 0xaa'dır ve bu, BIOS'a bu aygıtın önyüklenebilir olduğunu belirtir. Örneğin:
-
 
  
      ;
@@ -156,25 +122,16 @@ resim
 
 Bu örnekte, kodun 16 bit gerçek modda yürütüleceğini ve bellekte 0x7c00'de başlayacağını görebilirsiniz. Başladıktan sonra; sadece "!" sembolünü yazdıran, 0x10 işlemini çağırır; kalan 510 bayt'ı sıfırlarla doldurur ve iki sihirli bayt 0xaa ve 0x55 ile bitirir.
 
-<<<<<<< HEAD
 
-Objdump kullanarak bunun bir ikili d�k�m�n� g�rebilirsiniz:
-=======
 Objdump kullanarak bunun bir ikili dökümünü görebilirsiniz:
->>>>>>> origin/master
 
      nasm -f bin boot.nasm
      objdump -D -b binary -mi386 -Maddr16,data16,intel boot
 
 
-<<<<<<< HEAD
-Ger�ek d�nyadaki bir �ny�kleme sekt�r�, �ny�kleme i�lemini devam ettirmek i�in bir koda ve bir bit say�s� ve bir �nlem i�areti yerine bir b�l�m tablosuna sahiptir :) Bu noktadan sonra, BIOS, kontrol� �ny�kleyiciye devreder.
-
-NOT: Yukar�da a��kland��� gibi, CPU Real Mode'dad�r; Real Mode'da, haf�zadaki fiziksel adresi hesaplama �u �ekilde yap�l�r:
-=======
 Gerçek dünyadaki bir önyükleme sektörü, önyükleme işlemini devam ettirmek için bir koda ve bir bit sayısı ve bir ünlem işareti yerine bir bölüm tablosuna sahiptir :) Bu noktadan sonra, BIOS, kontrolü önyükleyiciye devreder.
+
 NOT: Yukarıda açıklandığı gibi, CPU Real Mode'dadır; Real Mode'da, hafızadaki fiziksel adresi hesaplama şu şekilde yapılır:
->>>>>>> origin/master
 
 PhysicalAddress = Segment Selector * 16 + Offset
 
@@ -210,17 +167,11 @@ Bootloader
 
 GRUB 2 ve syslinux gibi Linux'u önyükleyebilen bir dizi önyükleyici var. Linux çekirdeğinin Linux desteği uygulamak için bir önyükleyicinin gereksinimlerini belirten bir Önyükleme protokolü vardır. Bu örnek, GRUB 2'yi açıklayacaktır.
 
-<<<<<<< HEAD
-BIOS, bir �ny�kleme ayg�t� se�ti ve kontrol� �ny�kleme kesimi koduna aktard��� i�in y�r�tme boot.img'den ba�lat�l�r. Bu kod, mevcut s�n�rl� miktarda alan nedeniyle �ok basittir ve GRUB 2'nin temel g�r�nt�s�n�n konumuna atlamak i�in kullan�lan bir i�aret�i i�erir. �ekirdek imaj� diskboot.img ile ba�lar ve genellikle ilk b�l�mden hemen sonra kullan�lmayan alana ilk b�l�mden �nce kaydedilir. Yukar�daki kod, GRUB 2'nin �ekirde�ini ve dosya sistemlerini i�lemek i�in kullan�lan s�r�c�leri i�eren �ekirdek g�r�nt�s�n�n geri kalan�n� belle�e y�kler. �ekirdek imaj�n�n geri kalan�n� y�kledikten sonra, grub_main'i �al��t�r�r.
-
-Grub_main konsolu ba�lat�r, mod�llerin temel adresini al�r, k�k ayg�t�n� ayarlar, grub yap�land�rma dosyas�n� y�kler / ayr��t�r�r, mod�lleri y�kler vb. �al��t�rma bitince, grub_main grub'� normal moda ta��r. Grub_normal_execute (grub-core / normal / main.c'den) son haz�rl�klar� tamamlar ve bir i�letim sistemi se�mek i�in bir men� g�sterir. Grub men� giri�lerinden birini se�ti�imizde grub_menu_execute_entry �al��t�r�l�r, grub'�n �ny�kleme komutunun �al��t�r�lmas� ve se�ilen i�letim sisteminin �ny�klenmesi.
-
-�ekirdek �ny�kleme protokol�n� okuyabilece�imiz gibi, �ny�kleyici, �ekirdek kurulum kodundan 0x01f1 ofsetten ba�layan �ekirdek kurulum header'�n�n baz� alanlar�n� okumal� ve doldurmal�d�r. �ekirdek header'�  arch/86/boot/header.S,  a�a��dakilerden ba�l�yor:
-=======
 BIOS, bir önyükleme aygıtı seçti ve kontrolü önyükleme kesimi koduna aktardığı için yürütme boot.img'den başlatılır. Bu kod, mevcut sınırlı miktarda alan nedeniyle çok basittir ve GRUB 2'nin temel görüntüsünün konumuna atlamak için kullanılan bir işaretçi içerir. Çekirdek imajı diskboot.img ile başlar ve genellikle ilk bölümden hemen sonra kullanılmayan alana ilk bölümden önce kaydedilir. Yukarıdaki kod, GRUB 2'nin çekirdeğini ve dosya sistemlerini işlemek için kullanılan sürücüleri içeren çekirdek görüntüsünün geri kalanını belleğe yükler. Çekirdek imajının geri kalanını yükledikten sonra, grub_main'i çalıştırır.
+
 Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını ayarlar, grub yapılandırma dosyasını yükler / ayrıştırır, modülleri yükler vb. Çalıştırma bitince, grub_main grub'ı normal moda taşır. Grub_normal_execute (grub-core / normal / main.c'den) son hazırlıkları tamamlar ve bir işletim sistemi seçmek için bir menü gösterir. Grub menü girişlerinden birini seçtiğimizde grub_menu_execute_entry çalıştırılır, grub'ın önyükleme komutunun çalıştırılması ve seçilen işletim sisteminin önyüklenmesi.
+
 Çekirdek önyükleme protokolünü okuyabileceğimiz gibi, önyükleyici, çekirdek kurulum kodundan 0x01f1 ofsetten başlayan çekirdek kurulum header'ının bazı alanlarını okumalı ve doldurmalıdır. Çekirdek header'ı  arch/86/boot/header.S,  aşağıdakilerden başlıyor:
->>>>>>> origin/master
 
       .globl hdr
      hdr:
@@ -232,16 +183,11 @@ Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını
          root_dev:    .word 0
          boot_flag:   .word 0xAA55
 
-�ny�kleyicinin bunu komut sat�r�ndan al�nan ya da hesaplanan de�erlerle header'lar�n geri kalan�n� doldurmas� gerekir. (�ekirdek kurulum header'�n�n t�m alanlar�na ili�kin a��klamalar� tam olarak ele almayaca��z, bunun yerine �ekirde�in bunlar� nas�l kulland���n� tart��t���m�zda �ny�kleme protokol�ndeki t�m alanlar�n bir a��klamas�n� bulabilirsiniz.)  
+Önyükleyicinin bunu komut satırından alınan ya da hesaplanan değerlerle header'ların geri kalanını doldurması gerekir. (Çekirdek kurulum header'ının tüm alanlarına ilişkin açıklamaları tam olarak ele almayacağız, bunun yerine çekirdeğin bunları nasıl kullandığını tartıştığımızda önyükleme protokolündeki tüm alanların bir açıklamasını bulabilirsiniz.)  
 
-<<<<<<< HEAD
-=======
-Önyükleyicinin bunu komut satırından alınan ya da hesaplanan değerlerle header'ların geri kalanını doldurması gerekir. (Çekirdek kurulum header'ının tüm alanlarına ilişkin açıklamaları tam olarak ele almayacağız, bunun yerine çekirdeğin bunları nasıl kullandığını tartıştığımızda önyükleme protokolündeki tüm alanların bir açıklamasını bulabilirsiniz.)
->>>>>>> origin/master
 
 Çekirdek önyükleme protokolünde görebileceğiniz gibi, çekirdek yüklendikten sonra bellek haritası aşağıdaki gibi olacaktır:
 
-<<<<<<< HEAD
 
              | Protected-mode kernel  |
      100000   +------------------------+
@@ -264,45 +210,6 @@ Grub_main konsolu başlatır, modüllerin temel adresini alır, kök aygıtını
              000600   +------------------------+
              | BIOS use only          |
              000000   +------------------------+
-=======
-         | Protected-mode kernel  |
-									
-100000   +------------------------+
-
-         | I/O memory hole        |
-									
-0A0000   +------------------------+
-
-         | Reserved for BIOS      | Leave as much as possible unused
-         ~                        ~
-         | Command line           | (Can also be below the X+10000 mark)
-									
-X+10000  +------------------------+
-
-         | Stack/heap             | For use by the kernel real-mode code.
-									
-X+08000  +------------------------+
-
-         | Kernel setup           | The kernel real-mode code.
-									
-         | Kernel boot sector     | The kernel legacy boot sector.
-       X +------------------------+
-							
-         | Boot loader            | <- Boot sector entry point 0x7C00
-									
-001000   +------------------------+
-
-
-         | Reserved for MBR/BIOS  |
-000800   +------------------------+
-
-         | Typically used by MBR  |
-000600   +------------------------+
-
-         | BIOS use only          |
-									
-000000   +------------------------+
->>>>>>> origin/master
 
 
 Yani, önyükleyici kontrolü çekirdeğe aktardığında şuradan başlar:
@@ -316,12 +223,8 @@ resim
 
 Önyükleyici, Linux çekirdeğini belleğe yükledi, header alanlarını doldurdu ve karşılık gelen bellek adresine atladı. Artık doğrudan çekirdek kurulum koduna geçebiliriz.
 
-<<<<<<< HEAD
 
-�ekirdek Kurulumunun Ba�lang�c�
-=======
 Çekirdek Kurulumunun Başlangıcı
->>>>>>> origin/master
 
 Son olarak, çekirdekteyiz! Teknik olarak, çekirdek henüz çalışmıyor; İlk olarak çekirdeği, bellek yöneticisini, süreç yöneticisini vb. Kurmamız gerekir. Çekirdek kurulumunun çalışması, _start'da arch / x86 / boot / header.S'den başlar. Önceden birkaç talimat olduğundan ilk bakışta biraz tuhaf. 
 
@@ -534,4 +437,5 @@ Linkler
 - Ralf Brown's Interrupt List
 - Power supply
 - Power good signal
+
 
