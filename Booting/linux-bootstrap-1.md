@@ -323,7 +323,6 @@ Daha önce yazmış olduğum gibi, grub2, çekirdeği kurulum kodunu 0x10000 adr
 _start:
     .byte 0xeb
     .byte start_of_setup-1f
-
 jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
 
 pushw   %ds
@@ -342,6 +341,7 @@ Kurulum kodunun neredeyse tamamı gerçek modda C dil ortamına hazırlanıyor. 
     je      2f
 
 Bu, 3 farklı senaryonun ortaya çıkmasına neden olabilir:
+
 - Ss'in geçerli değeri 0x10000'tür (cs'in yanındaki tüm diğer bölüm kayıtları gibi)
 - Ss geçersiz ve CAN_USE_HEAP bayrağı ayarlanmış (aşağıya bakın)
 - Ss geçersiz ve CAN_USE_HEAP bayrağı ayarlanmamış (aşağıya bakın)
@@ -364,10 +364,10 @@ resim
 - İkinci senaryoda, (ss! = Ds). Önce, _end'in değerini (kurulum kodunun sonundaki adres) dx'e koyar ve yığını kullanıp kullanamayacağımızı test etmek için testb komutunu kullanarak loadflags başlık alanını kontrol ederiz. Loadflags, aşağıdaki gibi tanımlanan bir bit maskesi header'ı dır:
 
 
- #define LOADED_HIGH     (1<<0)
- #define QUIET_FLAG      (1<<5)
- #define KEEP_SEGMENTS   (1<<6)
- #define CAN_USE_HEAP    (1<<7)
+  //#define LOADED_HIGH     (1<<0)
+  //#define QUIET_FLAG      (1<<5)
+  //#define KEEP_SEGMENTS   (1<<6)
+  //#define CAN_USE_HEAP    (1<<7)
 
 Ve önyükleme protokolünü okuyabildiğimiz için,
 
