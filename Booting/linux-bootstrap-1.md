@@ -116,7 +116,7 @@ Bu, QEMU'ya yeni bir disk imajı olarak oluşturduğumuz önyükleme ikili dosya
 Şunu göreceksiniz;
 
 
-resim
+![alt tag](https://camo.githubusercontent.com/0c5598327b189059cac641cc7bb963dfdda96cf2/687474703a2f2f6f6936302e74696e797069632e636f6d2f327162777570302e6a7067)
 
 
 
@@ -220,7 +220,7 @@ Yani, önyükleyici kontrolü çekirdeğe aktardığında şuradan başlar:
 Burada X, çekirdek önyükleme sektörünün yüklenmekte olduğu adresidir. Benim durumumda; X,  0x10000'dır. Bellek dökümünde görebileceğimiz gibi:
 
 
-resim
+![alt tag](https://camo.githubusercontent.com/a450cde6ad2b342ce5d8a312c185f6bf80b065b6/687474703a2f2f6f6935372e74696e797069632e636f6d2f3136626b636f322e6a7067)
 
 Önyükleyici, Linux çekirdeğini belleğe yükledi, header alanlarını doldurdu ve karşılık gelen bellek adresine atladı. Artık doğrudan çekirdek kurulum koduna geçebiliriz.
 
@@ -237,7 +237,7 @@ Uzun zaman önce, Linux çekirdeği kendi önyükleyicisini kullanıyordu. Ancak
 şunu göreceksiniz:
 
 
-resim
+![alt tag](https://camo.githubusercontent.com/cff3757c397b6d4ebf2706a874a729cad5eefaef/687474703a2f2f6f6936302e74696e797069632e636f6d2f723032786b7a2e6a7067)
 
 
 Aslında header.S, MZ'den başlar (yukarıdaki resme bakın), PE hata mesajını yazdıran ve aşağıdaki PE header'ı:
@@ -361,11 +361,11 @@ Bu üç senaryonun hepsine sırayla bakalım:
 
 Burada, dx (bootloader tarafından verilen sp içeriyor) 4 bayt'a ve sıfır olup olmadığına ilişkin bir hizaya geldiklerini görebiliriz. Sıfır ise, dx'e 0xfffc (64 KB'lik maksimum segment boyutundan önce 4 bayt hizalı adres) koyarız. Sıfır değilse, önyükleyici (benim durumumda 0xf7f4) tarafından verilen sp'yi kullanmaya devam ederiz. Bundan sonra, ax değerini 0x10000'lük doğru segment adresini ss içine yerleştirdik ve doğru bir sp ayarladı. Artık doğru bir yığınımız var:
 
-resim
+![alt tag](https://camo.githubusercontent.com/fd6508ced7cf2bc23a5401388f47c4bf75ffa53b/687474703a2f2f6f6935382e74696e797069632e636f6d2f313669776369732e6a7067)
 
 - İkinci senaryoda, (ss! = Ds). Önce, _end'in değerini (kurulum kodunun sonundaki adres) dx'e koyar ve yığını kullanıp kullanamayacağımızı test etmek için testb komutunu kullanarak loadflags başlık alanını kontrol ederiz. Loadflags, aşağıdaki gibi tanımlanan bir bit maskesi header'ı dır:
 
-
+ 
   //#define LOADED_HIGH     (1<<0)
   
   //#define QUIET_FLAG      (1<<5)
@@ -388,19 +388,21 @@ Field name: loadflags
 
 CAN_USE_HEAP biti ayarlanmışsa, heap_end_ptr'ı dx'e (_end'i işaret eder) yerleştirir ve ona STACK_SIZE (minimum yığın boyutu, 512 bayt) ekleriz. Bundan sonra dx taşınmazsa (taşınmayacak, dx = _end + 512), etiket 2'ye atlanır (önceki durumda olduğu gibi) ve doğru bir yığın oluşur.
 
-resim
+
+
+ ![alt tag](https://camo.githubusercontent.com/49e2c3b70d081f745bc6e53f72df96b806e27cb6/687474703a2f2f6f6936322e74696e797069632e636f6d2f6472376235772e6a7067)
 
 
 CAN_USE_HEAP ayarlanmadığında _end ile _end + STACK_SIZE arasında en az bir yığın kullanırız:
 
-resim
+![alt tag](https://camo.githubusercontent.com/33f54e2576edfb855cc90f4669fd49c5556a1aa6/687474703a2f2f6f6936302e74696e797069632e636f6d2f323877303531792e6a7067)
 
 BSS Kurulumu
 
 
 Ana C koduna atlayabilmemiz için gerçekleşmesi gereken son iki adım BSS alanını kuruyor ve "sihirli" imzayı kontrol ediyor. İlk olarak imza kontrolü:
 
-cmpl    $0x5a5aaa55, setup_sig
+   cmpl    $0x5a5aaa55, setup_sig
     jne     setup_bad
 
 Bu, setup_sig'yi sihirli sayı 0x5a5aaa55 ile karşılaştırır. Eşit değillerse ölümcül bir hata bildirilir. Sihirli sayı eşleşirse, bir dizi doğru bölüm kaydı ve bir yığımız olduğunu bilerek, yalnızca C koduna atlamadan önce BSS bölümünü kurmamız gerekir.
@@ -416,7 +418,9 @@ BSS bölümü statik olarak ayrılmış, başlatılmamış verileri depolamak i�
 
 İlk olarak, __bss_start adresi di'ye taşınır. Daha sonra, _end + 3 adresi (+3 - 4 bayta hizalanır) cx'e taşınır. Eax kaydı silinir (bir xor komutu kullanılarak) ve bss bölüm boyutu (cx-di) hesaplanır ve cx'e yerleştirilir. Daha sonra, cx dörde bölünür (bir 'word' boyutu) ve stosl talimatı eax (sıfır) değerini di'nin gösterdiği adrese depolayarak di'yi dört arttırarak tekrar cx'e kadar tekrarlar Sıfıra ulaşır). Bu kodun net etkisi, sıfırların __bss_start'dan _end'e bellekteki tüm kelimeleri kullanarak yazıldığıdır:
 
-resim
+
+![alt tag](https://camo.githubusercontent.com/76b4eece266aae9a5e435c07744abdc2fb7fd6fa/687474703a2f2f6f6935392e74696e797069632e636f6d2f32396d326579722e6a7067)
+
 
 Main'e Atlamak 
 
