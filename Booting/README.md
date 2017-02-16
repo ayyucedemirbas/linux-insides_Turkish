@@ -4,7 +4,7 @@ Bu bölüm, Linux çekirdeğinin önyükleme işlemini açıklar. İşte size Li
 
 [Önyükleyiciyi yüklemeden çekirdeğe](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-1.md) -  bilgisayarınızı açmanızdan çekirdeğin ilk talimatının çalışmasına kadar gerçekleşen tüm aşamaları açıklar.
 
-[Çekirdeğin setup kodundaki ilk adımlar](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-2.md) - çekirdeğin setup kodundaki ilk adımları açıklar. Heap (ç.n -belleğin bir bölümü)'in başlatılmasını, EDD, IST vb. gibi farklı parametrelerin sorgusunu göreceksiniz. 
+[Çekirdeğin setup kodundaki ilk adımlar](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-2.md) - çekirdeğin setup kodundaki ilk adımları açıklar. Heap (ç.n -belleğin bir bölümü)'in başlatılmasını, EDD, IST vb. gibi farklı parametrelerin sorgusunu göreceksiniz. 
 
 [Video modunun başlatılması ve korumalı moda geçiş](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-3.md) -  çekirdek setup kodunda video modunun başlangıcını ve korumalı moda geçişi açıklar.
 
