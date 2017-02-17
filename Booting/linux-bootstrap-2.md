@@ -152,7 +152,9 @@ Fiziksel adresi korumalı modda almak için aşağıdaki adımlar gereklidir:
 
 Şematik olarak şöyle görünecektir:
 
-    ![alt tag](http://i.imgur.com/zBQ9aLo.png)
+
+ ![alt tag](http://i.imgur.com/zBQ9aLo.png)
+    
 
 Real Mode'dan korumalı moda geçiş algoritması şöyledir:
 
