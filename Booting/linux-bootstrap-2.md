@@ -152,7 +152,7 @@ Fiziksel adresi korumalı modda almak için aşağıdaki adımlar gereklidir:
 
 Şematik olarak şöyle görünecektir:
 
-    ![alt tag](https://camo.githubusercontent.com/a47fe9d65396ec1a906257d7f7589ef15ea21465/687474703a2f2f6f6936322e74696e797069632e636f6d2f32796f333639762e6a7067)
+    ![alt tag](http://i.imgur.com/zBQ9aLo.png)
 
 Real Mode'dan korumalı moda geçiş algoritması şöyledir:
 
