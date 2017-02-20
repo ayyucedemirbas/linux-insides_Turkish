@@ -220,6 +220,172 @@ Memcpy boot_params.hdr adresini di'ye koyar ve boyutu Stack'e kaydeder. Bundan s
 
 Konsolu Başlatma
 
+Hdr; boot_params.hdr dosyasına kopyalandıktan sonra, bir sonraki adım arch/x86/ boot/early_serial_console.c'de tanımlanan console_init işlevini çağırarak konsol başlatma işlemidir.
+
+Komut satırında earlyprintk seçeneğini bulmaya çalışır ve arama başarılı olursa, seri bağlantı noktasının bağlantı noktası adresini ve baud hızını ayrıştırır ve seri bağlantı noktasını başlatır. earlyprintk komut satırı seçeneğinin değeri bunlardan biri olabilir:
+
+- serial,0x3f8,115200
+- serial,ttyS0,115200
+- ttyS0,115200
+
+Seri bağlantı noktası başlatıldıktan sonra ilk çıktıyı görebiliriz:
+
+       if (cmdline_find_option_bool("debug"))
+           puts("early console in setup code\n");
+
+puts'un tty.c'de tanımlanması . Gördüğümüz gibi, putchar methodunu çağırarak bir döngüde ifadeyi karakter karakter yazdırır. Şimdi, putchar uygulanmasına bakalım:
+
+
+       void __attribute__((section(".inittext"))) putchar(int ch)
+       {
+          if (ch == '\n')
+              putchar('\r');
+
+            bios_putchar(ch);
+
+           if (early_serial_base != 0)
+              serial_putchar(ch);
+          }
+
+
+__attribute __((section(".Inittext"))) bu kodun .inittext bölümünde olacağı anlamına gelir. Bunu setup.ld linker dosyasında bulabilirsiniz.
+
+
+Her şeyden önce, putchar \n sembolünü denetler ve eğer bulunursa, önce \r yazdırır. Bundan sonra 0x10 kesme çağrısıyla BIOS'u çağırarak VGA ekranında karakter çıktılar:
+
+         static void __attribute__((section(".inittext"))) bios_putchar(int ch)
+         {
+           struct biosregs ireg;
+
+               initregs(&ireg);
+               ireg.bx = 0x0007;
+               ireg.cx = 0x0001;
+               ireg.ah = 0x0e;
+               ireg.al = ch;
+               intcall(0x10, &ireg, NULL);
+           }
+
+Burada; initregs, biosreg yapılarını alır ve önce memset fonksiyonunu kullanarak biosreg'leri sıfırlar ve ardından kayıt değerleri ile doldurur.
+
+    
+            memset(reg, 0, sizeof *reg);
+            reg->eflags |= X86_EFLAGS_CF;
+            reg->ds = ds();
+            reg->es = ds();
+            reg->fs = fs();
+            reg->gs = gs();
+
+Memset'in uygulamasına bakalım:
+
+           GLOBAL(memset)
+             pushw   %di
+             movw    %ax, %di
+             movzbl  %dl, %eax
+             imull   $0x01010101,%eax
+             pushw   %cx
+             shrw    $2, %cx
+             rep; stosl
+             popw    %cx
+             andw    $3, %cx
+             rep; stosb
+             popw    %di
+             retl
+           ENDPROC(memset)
+
+Yukarıda okuduğunuz gibi memcpy methodu gibi hızlı arama çağrı kurallarını kullanır; bu fonksiyon ax, dx ve cx kayıtlarından parametreler alıyor anlamına gelir.
+
+Genellikle memset'in uygulaması bir memcpy'nin uygulaması gibidir. di yazmacının değerini stack'e kaydeder ve ax değerini biosreg yapılarının adresi olan di'ye koyar. Sonraki, dl değerini eax kaydının düşük 2 baytına kopyalanan movzbl talimatıdır. eax'in geri kalan 2 yüksek baytını sıfırlarla doldurulur.
+
+
+Sonraki talimat eax'i 0x01010101 ile çarpar. Bunun nedeni, memset'in aynı anda 4 bayt kopyalamasıdır. Örneğin, bir yapıyı memset ile 0x7 ile doldurmamız gerekir. Eax, bu durumda 0x00000007 değerini içerecektir. Yani eğer eax'i 0x01010101 ile çarparsak, 0x07070707 elde edeceğiz ve şimdi bu 4 bayt'ı yapıya kopyalayabiliriz. Memset rep kullanır; eax'i es: di'ye kopyalamak için stosl talimatları.
+
+
+Memset fonksiyonunun geri kalan kısmı memcpy ile hemen hemen aynıdır.
+
+
+biosregs yapısı memset ile doldurulduktan sonra bios_putchar, bir karakter yazdıran 0x10 kesmesini çağırır. Ardından, seri bağlantı noktasının başlatılıp başlatılmadığını kontrol eder ve orada ayarlanmışsa seri_putchar ve inb / outb talimatlarıyla bir karakter yazar.
+
+Heap'i Başlatmak
+
+
+Stack ve bss bölümü, header.S'de (önceki bölüme bakın) hazırlandıktan sonra, çekirdeğin init_heap işlevi ile heap'i başlatması gerekiyor.
+
+
+Her şeyden önce init_heap, çekirdek kurulum header'ındaki loadflags'tan CAN_USE_HEAP bayrağını denetler ve bu bayrak ayarlanmışsa heap'in sonunu hesaplar:
+
+
+         char *stack_end;
+
+          if (boot_params.hdr.loadflags & CAN_USE_HEAP) {
+             asm("leal %P1(%%esp),%0"
+             : "=r" (stack_end) : "i" (-STACK_SIZE));
+
+
+Veya başka bir deyişle  stack_end = esp - STACK_SIZE
+
+
+Sonra heap_end hesaplaması geliyor:
+
+
+           heap_end = (char *)((size_t)boot_params.hdr.heap_end_ptr + 0x200);
+
+Heap_end_ptr veya _end + 512 (0x200h) anlamına gelir. Son kontrol, heap_end'in stack_end'den büyük olup olmadığıdır. Eğer öyleyse, stack_end, heap_end'e eşit olarak atanır.
+
+Şimdi heap başlatılıyor ve bunu GET_HEAP methodunu kullanarak uygulayabiliriz. Nasıl kullanıldığını, nasıl kullanılacağını ve bir sonraki yazılarda nasıl uygulanacağını göreceğiz.
+
+
+CPU Doğrulama
+
+Gördüğümüz gibi bir sonraki adım, arch/x86/boot/cpu.c'den validate_cpu ile cpu doğrulamasıdır.
+
+Check_cpu işlevini çağırır ve cpu seviyesini ve gereken cpu düzeyini ona aktarır ve çekirdeğin doğru cpu düzeyinde başlatıldığını denetler.
+
+
+       check_cpu(&cpu_level, &req_level, &err_flags);
+       if (cpu_level < req_level) {
+           ...
+           return -1;
+        }
+
+
+Check_cpu; cpu bayrakları, x86_64 (64-bit) işlemci durumunda uzun modun varlığını kontrol eder, işlemcinin vendor'ını kontrol eder ve eksik olduğu durumlarda AMD için SSE + SSE2'yi kapatmak gibi bazı vendor'lar için hazırlık yapar.
+
+
+Belleğin Algılanması
+
+
+Bir sonraki adım, detect_memory fonksiyonuyla bellek algılama yöntemidir. detect_memory temel olarak mevcut RAM'in, cpu'ya bir haritasını sağlar. 0xe820, 0xe801 ve 0x88 gibi bellek algılama için farklı programlama arabirimleri kullanır. Burada yalnızca 0xE820 uygulanmasını göreceğiz.
+
+
+Arch/x86/boot/memory.c kaynak dosyasından detect_memory_e820 uygulamasına bakalım. Öncelikle, detect_memory_e820 fonksiyonu yukarıda gösterildiği gibi biosreg yapılarını başlatır ve kayıtları 0xe820 çağrısı için özel değerlerle doldurur:
+
+
+       initregs(&ireg);
+       ireg.ax  = 0xe820;
+       ireg.cx  = sizeof buf;
+       ireg.edx = SMAP;
+       ireg.di  = (size_t)&buf;
+
+
+- ax fonksiyonun sayısını içerir (bizim durumumuzda 0xe820)
+- cx kayıt, bellek hakkında veri içeren arabellek boyutunu içerir
+- edx, SMAP sihirli numarasını içermelidir
+- es: di, bellek verilerini içerecek olan arabellek adresini içermelidir
+- ebx sıfır olmalı.
+
+Sonrası, bellekle ilgili verilerin toplanacağı bir döngüdür. Adres tahsisi tablosundan bir satır yazan 0x15 BIOS kesmesinin çağrısından başlar. Bir sonraki satırı elde etmek için bu kesmeyi tekrar çağırmamız gerekir (döngüde yaptığımız şey). Bir sonraki çağrının öncesinde ebx, daha önce döndürülen değeri içermelidir:
+
+          intcall(0x15, &ireg, &oreg);
+          ireg.ebx = oreg.ebx;
+
+
+
+
+
+
+
+
+
 
 
 
