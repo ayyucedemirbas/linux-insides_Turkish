@@ -20,7 +20,7 @@ Korumalı mod nedir? Korumalı mod, ilk olarak 1982'de x86 mimarisine eklendi ve
 
  Real Mode'dan uzaklaşmanın başlıca nedeni RAM'e çok sınırlı erişim olmasıdır. Önceki bölümden hatırladığınız gibi, Real Mode'da yalnızca 2 üzeri 20 byte veya 1 Megabayt, bazen sadece 640 Kilobayt RAM mevcut.
 
- Korumalı mod birçok değişiklik getirdi, ancak ana farklardan biri bellek yönetimindeki farktır. 20 bit adres veriyolu yerine 32 bitlik adres veri yolu getirildi. 4 Gigabyte bellek ve 1 Megabayt gerçek moda erişime izin verildi. Ayrıca, sonraki bölümlerde okuyabileceğiniz sayfalama desteği eklendi.
+ Korumalı mod birçok değişiklik getirdi, ancak ana farklardan biri bellek yönetimindeki farktır. 20 bit adres veriyolu yerine 32 bitlik adres veri yolu getirildi. 4 Gigabyte bellek ve 1 Megabayt Real Mode'a erişime izin verildi. Ayrıca, sonraki bölümlerde okuyabileceğiniz sayfalama desteği eklendi.
 
 
 Korumalı modda bellek yönetimi, neredeyse bağımsız iki parçaya bölünür:
