@@ -378,6 +378,205 @@ Sonrası, bellekle ilgili verilerin toplanacağı bir döngüdür. Adres tahsisi
           intcall(0x15, &ireg, &oreg);
           ireg.ebx = oreg.ebx;
 
+Sonuçta, adres tahsis tablosundan veri toplamak için döngü içinde yinelemeler yapar ve bu verileri e820entry dizisine yazar:
+
+
+- Bellek segmentinin başlangıcı
+- Bellek segmentinin boyutu
+- Bellek segmentinin tipi (ayrılabilir, kullanılabilir vs ...).
+
+
+Bunun sonucunu dmesg çıktısında görebilirsiniz:
+
+
+       [    0.000000] e820: BIOS-provided physical RAM map:
+       [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+       [    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+       [    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+       [    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000003ffdffff] usable
+       [    0.000000] BIOS-e820: [mem 0x000000003ffe0000-0x000000003fffffff] reserved
+       [    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+
+
+Klavyenin Başlatılması
+
+
+Bir sonraki adım, keyboard_init () fonksiyonunun çağrısıyla klavyenin başlatılmasıdır. İlk önce keyboard_init, initregs fonksiyonunu kullanarak kayıt başlatır ve klavye durumunu almak için 0x16 kesmesini çağırır.
+
+
+           initregs(&ireg);
+        ireg.ah = 0x02;     /* Get keyboard status */
+        intcall(0x16, &ireg, &oreg);
+        boot_params.kbd_status = oreg.al;
+
+
+Bundan sonra tekrar hızını ve gecikmesini ayarlamak için tekrar 0x16 yı çağırır.
+
+
+
+         ireg.ax = 0x0305;   /* Set keyboard repeat rate */
+       intcall(0x16, &ireg, NULL);
+
+
+Sorgulama
+
+
+Sonraki adımlar, farklı parametreleri sorgular. Bu sorgularla ilgili ayrıntılara girmeyeceğiz, ancak sonraki bölümlerde buna geri döneceğiz. Bu fonksiyonlara kısaca göz atalım:
+
+Query_mca rutini, makine model numarası, alt model numarası, BIOS revizyon düzeyi ve diğer donanıma özgü özellikleri almak için 0x15 BIOS kesmesini çağırır:
+
+       
+         int query_mca(void)
+           {
+              struct biosregs ireg, oreg;
+              u16 len;
+
+              initregs(&ireg);
+              ireg.ah = 0xc0;
+              intcall(0x15, &ireg, &oreg);
+
+              if (oreg.eflags & X86_EFLAGS_CF)
+              return -1;  /* No MCA present */
+
+              set_fs(oreg.es);
+              len = rdfs16(oreg.bx);
+
+              if (len > sizeof(boot_params.sys_desc_table))
+              len = sizeof(boot_params.sys_desc_table);
+
+              copy_from_fs(&boot_params.sys_desc_table, oreg.bx, len);
+              return 0;
+            }
+
+
+ah register'ını 0xc0 ile doldurur ve 0x15 BIOS kesmesini çağırır. Kesmeyi çalıştırdıktan sonra sonra taşıma bayrağını denetler ve 1 olarak ayarlanırsa BIOS MCA'yı desteklemez. Taşıma bayrağı 0 olarak ayarlanırsa, ES:BX, sistem bilgi tablosuna bir işaretçi içerecektir ve şuna benzer:
+
+        
+
+           Offset  Size    Description
+           00h    WORD    number of bytes following
+           02h    BYTE    model (see #00515)
+           03h    BYTE    submodel (see #00515)
+           04h    BYTE    BIOS revision: 0 for first release, 1 for 2nd, etc.
+           05h    BYTE    feature byte 1 (see #00510)
+           06h    BYTE    feature byte 2 (see #00511)
+           07h    BYTE    feature byte 3 (see #00512)
+           08h    BYTE    feature byte 4 (see #00513)
+           09h    BYTE    feature byte 5 (see #00514)
+           ---AWARD BIOS---
+           0Ah  N BYTEs   AWARD copyright notice
+           ---Phoenix BIOS---
+           0Ah    BYTE    ??? (00h)
+           0Bh    BYTE    major version
+           0Ch    BYTE    minor version (BCD)
+           0Dh  4 BYTEs   ASCIZ string "PTL" (Phoenix Technologies Ltd)
+           ---Quadram Quad386---
+           0Ah 17 BYTEs   ASCII signature string "Quadram Quad386XT"
+           ---Toshiba (Satellite Pro 435CDS at least)---
+           0Ah  7 BYTEs   signature "TOSHIBA"
+           11h    BYTE    ??? (8h)
+           12h    BYTE    ??? (E7h) product ID??? (guess)
+           13h  3 BYTEs   "JPN"
+
+
+Ardından, set_fs rutini çağırır ve es kaydının değerini buna geçiririz. Set_fs'in uygulanması oldukça basit:
+
+
+          static inline void set_fs(u16 seg)
+          {
+            asm volatile("movw %0,%%fs" : : "rm" (seg));
+          }
+
+
+
+Bu işlev, seg parametresinin değerini alır ve onu fs yazmacına koyan satır içi montaj içerir. Boot.h'de set_fs gibi birçok fonksiyon vardır, örneğin set_gs, fs, gs gibi bir değeri okumak için vs...
+
+
+
+Query_mca sonunda yalnızca es: bx tarafından işaret edilen tabloyu boot_params.sys_desc_table'a kopyalar.
+
+
+Sonraki adım, query_ist işlevini çağırarak Intel SpeedStep bilgilerini elde etmektir. Her şeyden önce CPU seviyesini kontrol eder ve doğruysa, bilgi almak için 0x15'i çağırır ve sonucu boot_params'a kaydeder.
+
+
+
+Aşağıdaki query_apm_bios işlevi, BIOS'dan Gelişmiş Güç Yönetimi bilgisi alır. Query_apm_bios 0x15 BIOS kesmesini de çağırır, ancak ah = 0x53 ile APM kurulumunu kontrol ederek. 0x15 çalıştırılmasından sonra, query_apm_bios fonksiyonları, PM signature'ını kontrol eder (0x504d olmalı), bayrağı taşır (APM destekleniyorsa 0 olmalı) ve cx kayıt değerini (0x02 ise korumalı mod arabirimi desteklenir) kontrol eder.
+
+
+
+Sonra tekrar 0x15'i çağırır, ancak ax = 0x5304 APM arabirimi bağlantısını keserek ve 32-bit korumalı mod arabirimini bağlayarak bunu yapar. Sonunda, boot_params.apm_bios_info dosyasını BIOS'dan alınan değerlerle doldurur.
+
+
+Query_apm_bios öğesinin yalnızca yapılandırma dosyasında CONFIG_APM veya CONFIG_APM_MODULE ayarlanması durumunda çalıştırılacağını unutmayın:
+
+
+
+      #if defined(CONFIG_APM) || defined(CONFIG_APM_MODULE)
+        query_apm_bios();
+      #endif
+
+
+BIOS'tan Gelişmiş Disk Sürücüsü bilgilerini sorgulayan, son query_edd fonksiyonudur. Query_edd uygulamasına bakalım.
+
+
+Her şeyden önce edd seçeneğini çekirdeğin komut satırından okuyor ve kapalı olarak ayarlanırsa, query_edd sadece geri dönüyor.
+
+
+
+EDD etkinleştirilmişse, query_edd BIOS destekli sabit diskler üzerinden gider ve EDD bilgilerini aşağıdaki döngüde sorgular:
+
+
+
+       for (devno = 0x80; devno < 0x80+EDD_MBR_SIG_MAX; devno++) {
+           if (!get_edd_info(devno, &ei) && boot_params.eddbuf_entries < EDDMAXNR) {
+               memcpy(edp, &ei, sizeof ei);
+               edp++;
+               boot_params.eddbuf_entries++;
+               }
+               ...
+               ...
+               ...
+
+
+Burada ilk sabit sürücü 0x80 ve EDD_MBR_SIG_MAX makrosunun değeri 16'dır. edd_info yapıları dizisine veri toplar. get_edd_info, 0x41 kulanarak ah ile 0x13 kesmesini çağırarak EDD varlığını denetler ve EDD varsa, get_edd_info yine 0x13 kesmesini çağırır, ancak ah ile 0x48 ve si, EDD bilgilerinin depolandığı buffer adresini içerir.
+
+
+
+Sonuç
+
+
+Linux-insides hakkındaki ikinci yazının sonuna geldik.Bir sonraki bölümde, korumalı moda geçmeden önce doğrudan video modu ayarı ve hazırlıkların geri kalan kısmını göreceğiz.
+
+
+Sorularınız veya önerileriniz varsa, @0xAX twitter hesabımdan, mail yoluyla veya GitHub'da isuue açarak bana ulaşabilirsiniz.
+
+İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen linux-inside'a PR gönderin.
+
+
+Linkler
+
+
+- Protected mode
+- Protected mode
+- Long mode
+- Nice explanation of CPU Modes with code
+- How to Use Expand Down Segments on Intel 386 and Later CPUs
+- earlyprintk documentation
+- Kernel Parameters
+- Serial console
+- Intel SpeedStep
+- APM
+- EDD specification
+- TLDP documentation for Linux Boot Process (old)
+Previous Part
+
+
+
+
+
+
+
+
 
 
 
