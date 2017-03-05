@@ -107,7 +107,109 @@ Heap ayırma için. dahili fonksiyon  __get_heap'i 3 parametreyle çağırır:
 - n ne kadar öğe ayıracağını söyler
 
 
+Video Modunu Ayarlama
 
+
+
+Şimdi doğrudan video modu başlatmaya geçebiliriz. Set_video fonksiyonunda RESET_HEAP() çağrısında durduk. Sonraki include/uapi /linux/screen_info.h sodyası içinde tanımlanan boot_params.screen_info yapısında video modu parametrelerini saklayan store_mode_params çağrısıdır.
+
+
+Store_mode_params fonksiyonuna bakarsak, fonksiyonun store_cursor_position fonksiyonuna yapılan çağrı ile başladığını görebiliriz. Fonksiyon adından anlayabileceğiniz gibi, imleç hakkında bilgi alır ve onu saklar.
+
+
+Öncelikle store_cursor_position, AH = 0x3 olan biosreg türünde iki değişkeni başlatır ve 0x10 BIOS kesmesini çağırır. Kesme başarıyla çalıştırıldıktan sonra, DL ve DH kayıtlarındaki sıra ve sütunları döndürür. Satır ve sütun, boot_params.screen_info yapısından orig_x ve orig_y alanlarına depolanır.
+
+
+Store_cursor_position yürütüldükten sonra, store_video_mode fonksiyonu çağrılır. Sadece geçerli video modunu alır ve boot_params.screen_info.orig_video_mode'da saklar.
+
+
+Bundan sonra, geçerli video modunu kontrol eder ve video_segmentini ayarlar. BIOS, kontrolü boot sector'ına aktardıktan sonra, aşağıdaki adresler video belleği içindir:
+
+
+       0xB000:0x0000   32 Kb   Monochrome Text Video Memory
+       0xB800:0x0000   32 Kb   Color Text Video Memory
+
+
+Bu nedenle, mevcut video modu tek renkli modda MDA, HGC veya VGA ise video_segment değişkenini 0xB000 olarak, mevcut video modu renkli modda ise 0xB800 olarak ayarlarız. Video bölümünün adresini ayarladıktan sonra font boyutu boot_params.screen_info.orig_video_points dosyasında şu şekilde saklanmalıdır:
+
+
+         set_fs(0);
+         font_size = rdfs16(0x485);
+         boot_params.screen_info.orig_video_points = font_size;
+
+
+Her şeyden önce set_fs fonksiyonuyla FS registerına 0 koyuyoruz. Önceki bölümde set_fs gibi fonksiyonlar gördük. Bunların hepsi boot.h dosyasında tanımlanmıştır. Ardından 0x485 adresinde bulunan değeri okur (bu bellek konumu yazı tipi boyutunu almak için kullanıldı) ve yazı tipi boyutunu boot_params.screen_info.orig_video_points olarak kaydederiz.
+
+
+             x = rdfs16(0x44a);
+             y = (adapter == ADAPTER_CGA) ? 25 : rdfs8(0x484)+1;
+
+
+Ardından, 0x44a adresine ve 0x484 adresine göre sütun miktarını elde ediyoruz ve bunları boot_params.screen_info.orig_video_cols ve boot_params.screen_info.orig_video_lines adreslerinde saklıyoruz. Bundan sonra, store_mode_params'ın yürütülmesi tamamlanmıştır.
+
+
+
+Ardından, ekran içeriğini yalnızca heap olarak kaydeden save_screen fonksiyonunu görebilirsiniz. Bu fonksiyon, satırlar ve sütunlar miktarı vb. gibi önceki fonksiyonlarda elde ettiğimiz tüm verileri toplar ve aşağıdaki gibi tanımlanmış saved_screen yapısında saklar:
+
+
+
+             static struct saved_screen {
+                 int x, y;
+                 int curx, cury;
+                 u16 *data;
+              } saved;
+
+
+Daha sonra heap'in bunun için boş alan olup olmadığını denetler:
+
+
+              if (!heap_free(saved.x*saved.y*sizeof(u16)+512))
+           return;
+
+
+Yeterli ise heap alanını tahsis eder ve saved_screen'i içinde depolar.
+
+
+Bir sonraki çağrı arch/x86/boot/video-mode.c'den probe_cards (0) 'dır. Tüm video_cards'ı geçer ve cards tarafından sağlanan modların sayısını toplar. İşte ilginç an, döngüyü görebiliyoruz:
+
+
+
+             for (card = video_cards; card < video_cards_end; card++) {
+                 /* collecting number of modes here */
+              }
+
+
+Ancak video_cards hiçbir yerde bildirilmedi. Cevap basittir: x86 çekirdek kurulum kodunda sunulan her video modu şu şekilde tanımlanmıştır:
+
+
+            
+             static __videocard video_vga = {
+             .card_name  = "VGA",
+              .probe      = vga_probe,
+              .set_mode   = vga_set_mode,
+               };
+
+
+Burada __videocard bir makro:
+
+
+            #define __videocard struct card_info __attribute__((used,section(".videocards")))
+
+
+ card_info yapısı şu anlama gelir:
+
+
+
+          struct card_info {
+               const char *card_name;
+               int (*set_mode)(struct mode_info *mode);
+               int (*probe)(void);
+               struct mode_info *modes;
+               int nmodes;
+               int unsafe;
+               u16 xmode_first;
+               u16 xmode_n;
+           };
 __get_heap'in uygulanması:
 
 
