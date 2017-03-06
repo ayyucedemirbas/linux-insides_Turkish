@@ -413,6 +413,7 @@ Ardından, ekran içeriğini yalnızca heap olarak kaydeden save_screen fonksiyo
 Daha sonra heap'in bunun için boş alan olup olmadığını denetler:
 
 
+
               if (!heap_free(saved.x*saved.y*sizeof(u16)+512))
            return;
 
@@ -460,3 +461,15 @@ Burada __videocard bir makro:
                u16 xmode_first;
                u16 xmode_n;
            };
+           
+           
+.videocards bölümündedir.Şimdi arch/ x86/ boot/setup.ld linker komut dosyasına bakalım:
+
+
+           .videocards : {
+             video_cards = .;
+              *(.videocards)
+              video_cards_end = .;
+             }
+
+Bu, video_cards'ın sadece bir bellek adresi olduğu ve tüm card_info yapılarının bu segmente yerleştirildiği anlamına gelir. Bu, tüm card_info yapılarının video_cards ve video_cards_end arasına yerleştirildiği anlamına gelir; dolayısıyla, hepsini dolaşmak için bir döngü kullanabilirsiniz. Probe_cards'ın çalıştırılmasından sonra doldurulmuş nmodes'la statik __videocard video_vga (video modlarının sayısı) gibi tüm yapılarımız var.
