@@ -472,4 +472,6 @@ Burada __videocard bir makro:
               video_cards_end = .;
              }
 
-Bu, video_cards'ın sadece bir bellek adresi olduğu ve tüm card_info yapılarının bu segmente yerleştirildiği anlamına gelir. Bu, tüm card_info yapılarının video_cards ve video_cards_end arasına yerleştirildiği anlamına gelir; dolayısıyla, hepsini dolaşmak için bir döngü kullanabilirsiniz. Probe_cards'ın çalıştırılmasından sonra doldurulmuş nmodes'la statik __videocard video_vga (video modlarının sayısı) gibi tüm yapılarımız var.
+Bu, video_cards'ın sadece bir bellek adresi olduğu ve tüm card_info yapılarının bu segmente yerleştirildiği anlamına gelir. Bu, tüm card_info yapılarının video_cards ve video_cards_end arasına yerleştirildiği anlamına gelir; dolayısıyla, hepsini dolaşmak için bir döngü kullanabilirsiniz. Probe_cards'ın çalıştırılmasından sonra doldurulmuş nmodes'la static __videocard video_vga (video modlarının sayısı) gibi tüm yapılarımız var.
+
+set_mode fonksiyonu video-mode.c'de tanımlanır ve video modlarının sayısı olan tek bir parametre olan mode'u alır. (Menüden veya setup_video'nun başlangıcında çekirdek setup kodunun header dosyasından alırız).
