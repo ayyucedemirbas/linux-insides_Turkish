@@ -357,7 +357,7 @@ Bu kadar. Artık heap için basit bir API sahibiyiz ve video modunu ayarlayabili
 
 
 
-Video Modunu Ayarlama
+######Video Modunu Ayarlama
 
 
 
@@ -408,6 +408,7 @@ Ardından, ekran içeriğini yalnızca heap olarak kaydeden save_screen fonksiyo
                  int curx, cury;
                  u16 *data;
               } saved;
+
 
 
 Daha sonra heap'in bunun için boş alan olup olmadığını denetler:
@@ -475,3 +476,48 @@ Burada __videocard bir makro:
 Bu, video_cards'ın sadece bir bellek adresi olduğu ve tüm card_info yapılarının bu segmente yerleştirildiği anlamına gelir. Bu, tüm card_info yapılarının video_cards ve video_cards_end arasına yerleştirildiği anlamına gelir; dolayısıyla, hepsini dolaşmak için bir döngü kullanabilirsiniz. Probe_cards'ın çalıştırılmasından sonra doldurulmuş nmodes'la static __videocard video_vga (video modlarının sayısı) gibi tüm yapılarımız var.
 
 set_mode fonksiyonu video-mode.c'de tanımlanır ve video modlarının sayısı olan tek bir parametre olan mode'u alır. (Menüden veya setup_video'nun başlangıcında çekirdek setup kodunun header dosyasından alırız).
+
+
+Set_mode fonksiyonu modu kontrol eder ve raw_set_mode fonksiyonunu çağırır. raw_set_mode,  seçilen kart, yani card-> set_mode (struct mode_info *) için set_mode fonksiyonunu çağırır. Bu fonksiyona card_info yapısından erişebiliriz. Her video modu, video moduna bağlı olarak doldurulan değerlerle bu yapıyı tanımlar (örneğin vga için, video_vga.set_mode fonksiyonu. Yukarıdaki vga için card_info yapısının örneğine bakın). Video_vga.set_mode, vga modunu kontrol eden ve ilgili fonksiyonu çağıran vga_set_mode'dur:
+
+          static int vga_set_mode(struct mode_info *mode)
+{
+	vga_set_basic_mode();
+
+	force_x = mode->x;
+	force_y = mode->y;
+
+	switch (mode->mode) {
+	case VIDEO_80x25:
+		break;
+	case VIDEO_8POINT:
+		vga_set_8font();
+		break;
+	case VIDEO_80x43:
+		vga_set_80x43();
+		break;
+	case VIDEO_80x28:
+		vga_set_14font();
+		break;
+	case VIDEO_80x30:
+		vga_set_80x30();
+		break;
+	case VIDEO_80x34:
+		vga_set_80x34();
+		break;
+	case VIDEO_80x60:
+		vga_set_80x60();
+		break;
+	}
+	return 0;
+}
+
+
+Video modunu ayarlayan her fonksiyon sadece AH register'ında belirli bir değere sahip 0x10 BIOS interrupt'ını çağırır.
+
+
+Video modunu ayarladıktan sonra onu boot_params.hdr.vid_mode'a geçiririrz.
+
+
+Sonraki vesa_store_edid çağrıldı. Bu fonksiyon, basitçe çekirdek kullanımı için EDID (Genişletilmiş Görüntü Tanımlama Verileri) bilgilerini saklar. Bu işlemden sonra store_mode_params tekrar çağrılır. Son olarak, do_restore ayarlıysa, ekran önceki bir duruma geri yüklenir.
+
