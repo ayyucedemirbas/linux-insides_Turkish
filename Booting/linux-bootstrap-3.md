@@ -453,7 +453,8 @@ Burada __videocard bir makro:
 
 
           struct card_info {
-               const char *card_name;
+
+const char *card_name;
                int (*set_mode)(struct mode_info *mode);
                int (*probe)(void);
                struct mode_info *modes;
@@ -484,7 +485,7 @@ Set_mode fonksiyonu modu kontrol eder ve raw_set_mode fonksiyonunu çağırır. 
 {
 	vga_set_basic_mode();
 
-	force_x = mode->x;
+İlk önce, interrupt flag (IF) ' i temizleyen bir cli komutu içeren bir inline assembly komutu bulunur. Bundan sonra, external interrupt'lar devre dışı bırakılır. Bir sonraki satır NMI'yi devre dışı bırakır (non-maskable interrupt).	force_x = mode->x;
 	force_y = mode->y;
 
 	switch (mode->mode) {
@@ -521,3 +522,35 @@ Video modunu ayarladıktan sonra onu boot_params.hdr.vid_mode'a geçiririrz.
 
 Sonraki vesa_store_edid çağrıldı. Bu fonksiyon, basitçe çekirdek kullanımı için EDID (Genişletilmiş Görüntü Tanımlama Verileri) bilgilerini saklar. Bu işlemden sonra store_mode_params tekrar çağrılır. Son olarak, do_restore ayarlıysa, ekran önceki bir duruma geri yüklenir.
 
+
+Video modunu ayarladık ve şimdi korumalı moda geçebiliriz.
+
+
+### Korumalı moda geçmeden önce son hazırlık
+
+Son method çağrısını - go_to_protected_mode - main.c dosyasında görebiliriz. 
+
+go_to_protected_mode, arch/x86/boot/pm.c'de tanımlanmıştır. Korumalı  moda geçmeden önce son hazırlıkları yapmak için bazı fonksiyonlar içeriyor; bu yüzden ona bakıp ne yaptıklarını ve nasıl çalıştığını anlamaya çalışalım.
+
+
+          asm volatile("cli");
+          outb(0x80, 0x70);	/* Disable NMI */
+          io_delay();
+
+
+İlk önce, interrupt flag (IF) ' i temizleyen bir cli komutu içeren bir inline assembly komutu bulunur. Bundan sonra, external interrupt'lar devre dışı bırakılır. Bir sonraki satır NMI'yi devre dışı bırakır (non-maskable interrupt).
+
+
+Bir interrupt, CPU'ya donanım veya yazılım tarafından yayılan bir sinyaldir. Sinyali aldıktan sonra, CPU geçerli komut dizisini askıya alır, durumunu kaydeder ve denetimi interrupt handler'a aktarır. Interrupt handler işini tamamladıktan sonra, denetimi interrupted instruction'a aktarır. Non-maskable interrupt'lar (NMI), izin alınmaksızın daima işlenen interrupt'lardır. Göz ardı edilemez ve genellikle kurtarılamayan donanım hataları için sinyal vermek için kullanılır. Şimdi, interrupt'ların ayrıntılarına girmeyeceğiz, ancak sonraki postlarda tartışacağız.
+
+Koda geri dönelim. İkinci satırın 0x70 (devre dışı bit) baytını 0x70'e (CMOS Adres register'ı) yazdığını görebiliriz. Bundan sonra, io_delay fonksiyonuna bir çağrı oluşur. Io_delay küçük bir gecikmeye neden olur ve şöyle görünür:
+
+
+
+		static inline void io_delay(void)
+               {
+	           const u16 DELAY_PORT = 0x80;
+	           asm volatile("outb %%al,%0" : : "dN" (DELAY_PORT));
+               }
+	      
+	      
