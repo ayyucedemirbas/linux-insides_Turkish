@@ -554,3 +554,45 @@ Koda geri dönelim. İkinci satırın 0x70 (devre dışı bit) baytını 0x70'e 
                }
 	      
 	      
+0x80 portuna herhangi bir bayt çıkışı sağlamak için tam 1 mikrosaniyelik gecikmelidir. Böylece 0x80 portuna herhangi bir değer (bizim durumumuzda AL registerından gelen değer) yazabiliriz. Bu gecikmeden sonra realmode_switch_hook fonksiyonunu çalıştırmayı tamamladık ve bir sonraki fonksiyona geçebiliriz.
+
+
+Bir sonraki fonksiyon A20 satırını etkinleştiren enable_a20'dir. Bu fonksiyon arch/x86/boot /a20.c'de tanımlanmıştır ve A20 kapısını farklı metodlarla etkinleştirmeye çalışır. Birincisi, A20'nin zaten etkin olup olmadığını a20_test_short fonksiyonuyla kontrol eden a20_test_short fonksiyonu:
+
+
+		static int a20_test(int loops)
+	{
+		int ok = 0;
+		int saved, ctr;
+
+		set_fs(0x0000);
+		set_gs(0xffff);
+
+		saved = ctr = rdfs32(A20_TEST_ADDR);
+
+    	while (loops--) {
+			wrfs32(++ctr, A20_TEST_ADDR);
+			io_delay();	/* Serialize and make delay constant */
+			ok = rdgs32(A20_TEST_ADDR+0x10) ^ ctr;
+			if (ok)
+				break;
+		}
+
+		wrfs32(saved, A20_TEST_ADDR);
+		return ok;
+	}
+	
+	
+	
+Her şeyden önce FS registerına 0x0000 ve GS registerına da 0xffff koyduk. Sonra A20_TEST_ADDR adresindeki değeri okuyoruz (0x200) ve bu değerleri  kaydedilen değişkene ve ctr'ye koyuyoruz.
+
+Daha sonra, güncellenmiş bir ctr değerini wrfs32 fonksiyonui ile fs: gs'ye yazdık, sonra 1 ms için geciktirdik ve GS registerından değeri A20_TEST_ADDR + 0x10 adresiyle okuduk, eğer sıfır değilse A20 satırını etkinleştirdik. A20 devre dışı bırakıldıysa, bunu a20.c'de bulabileceğiniz farklı bir methodla etkinleştirmeye çalışıyoruz. Örneğin AH =0x2041 ile 0x15 BIOS interruptı ile birlikte.
+
+
+enabled_a20 fonksiyonu başarısız olursa bir hata mesajı yazdırır ve die fonksiyonunu çağırır. Bunu, başladığımız ilk kaynak kodu dosyasından /arch/x86/boot /header.S'den hatırlayabilirsiniz.
+
+
+	die:
+		hlt
+		jmp	die
+		.size	die, .-die
