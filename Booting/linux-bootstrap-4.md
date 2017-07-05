@@ -1,6 +1,5 @@
-+s157
-+s173
-Bölüm 4: Çekirdek Önyükleme Süreci
+
+## Bölüm 4: Çekirdek Önyükleme Süreci
 ================================================================================
 
 64-bit moda geçiş
@@ -15,7 +14,7 @@ Bu yazı `Çekirdek önyükleme süreci` yazı dizisinin 4. yazısı. Bu bölüm
 ```assembly
 jmpl	*%eax
 ```
-32-bit giriş noktasının adresini içeren `eax` kaydını hatırlamış olmalısın. Bunu [linux kernel x86 boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt) okuyabilirsin:
+32-bit giriş noktasının adresini içeren `eax` kaydını hatırlamış olmalısınız. Bunu [linux kernel x86 boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt) okuyabilirsiniz:
 
 ```
 When using bzImage, the protected-mode kernel was relocated to 0x100000
