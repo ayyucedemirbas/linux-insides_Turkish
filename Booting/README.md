@@ -8,6 +8,6 @@ Bu bölüm, Linux çekirdeğinin önyükleme işlemini açıklar. İşte size Li
 
 [Video modunun başlatılması ve korumalı moda geçiş](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-3.md) -  çekirdek setup kodunda video modunun başlangıcını ve korumalı moda geçişi açıklar.
 
-[64-bit moda geçiş](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-4.md) - 64-bit moda geçiş için hazırlığı  ve geçişin ayrıntılarını açıklar.
+[64-bit moda geçiş](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-4.md) - 64-bit moda geçiş için hazırlığı  ve geçişin ayrıntılarını açıklar.
 
-[Sıkıştırılmış çekirdeği açmak](https://github.com/0xAX/linux-insides/blob/master/Booting/linux-bootstrap-5.md) - sıkıştırılmış çekirdeğin açılmasından önceki hazırlığı ve doğrudan açmanın detaylarını açıklar.
+[Sıkıştırılmış çekirdeği açmak](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-5.md) - sıkıştırılmış çekirdeğin açılmasından önceki hazırlığı ve doğrudan açmanın detaylarını açıklar.
