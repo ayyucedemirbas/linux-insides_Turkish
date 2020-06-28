@@ -82,3 +82,7 @@ assembly kaynak kodu dosyasının sonunda bulabilirsiniz:
         boot_stack:
 	            .fill BOOT_STACK_SIZE, 1, 0
         boot_stack_end:
+	
+ .bss sectionının sonunda  .pgtable 'ın hemen öncesinde yer alır. arch/x86/boot/compressed/vmlinux.lds.S linker scriptine bakarsanız, .bss ve .pgtable tanımlarını burada bulabilirsiniz.
+
+Stack şimdi doğru olduğundan, sıkıştırılmış çekirdeği, sıkıştırılmış çekirdeğin yeniden yerleştirme adresini hesapladığımızda, yukarıdaki adrese kopyalayabiliriz. Ayrıntılara girmeden önce, bu assembly koduna bir göz atalım:
