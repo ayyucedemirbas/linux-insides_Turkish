@@ -83,6 +83,46 @@ assembly kaynak kodu dosyasının sonunda bulabilirsiniz:
 	            .fill BOOT_STACK_SIZE, 1, 0
         boot_stack_end:
 	
- .bss sectionının sonunda  .pgtable 'ın hemen öncesinde yer alır. arch/x86/boot/compressed/vmlinux.lds.S linker scriptine bakarsanız, .bss ve .pgtable tanımlarını burada bulabilirsiniz.
+ .bss sectionının sonunda  .pgtable 'ın hemen öncesinde yer alır. arch/x86/boot/compressed/vmlinux.lds.S (https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/vmlinux.lds.S) linker scriptine bakarsanız, .bss ve .pgtable tanımlarını burada bulabilirsiniz.
 
 Stack şimdi doğru olduğundan, sıkıştırılmış çekirdeği, sıkıştırılmış çekirdeğin yeniden yerleştirme adresini hesapladığımızda, yukarıdaki adrese kopyalayabiliriz. Ayrıntılara girmeden önce, bu assembly koduna bir göz atalım:
+
+	pushq	%rsi
+	leaq	(_bss-8)(%rip), %rsi
+	leaq	(_bss-8)(%rbx), %rdi
+	movq	$_bss, %rcx
+	shrq	$3, %rcx
+	std
+	rep	movsq
+	cld
+	popq	%rsi
+	
+Bu instruction dizisi sıkıştırılmış çekirdeği açılmış olduğu yerin üstüne kopyalar.
+İlk önce rsi'yi stacke push ediyoruz. Bu register artık boot_params'a  önyükleme ile ilgili verileri içeren gerçek mod yapısı olan bir pointerı sakladığından (bu yapının çekirdek kurulumunun başında doldurulduğunu unutmayın), rsi değerini korumamız gerekir. Bu kodu yürüttükten sonra pointerı boot_params'a, rsi'nin arkasına (arkası olarak çevrildiğinden emin değilim, yeniden olabilir) pop ediyoruz.
+Sonraki iki leaq instructionı, rbs ve rbx registerlarının etkin adreslerini _bss - 8 ofsetiyle hesaplar ve sonuçları sırasıyla rsi ve rdi'ye atar. Bu adresleri neden hesaplıyoruz? Sıkıştırılmış çekirdek imajı bu kod (startup_32'den geçerli koda) ve dekompresyon kodu arasında bulunur. Bunu bu linker scriptine bakarak doğrulayabilirsiniz - arch/x86/boot/compressed/vmlinux.lds.S:(https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/vmlinux.lds.S)
+
+	. = 0;
+	.head.text : {
+		_head = . ;
+		HEAD_TEXT
+		_ehead = . ;
+	}
+	.rodata..compressed : {
+		*(.rodata..compressed)
+	}
+	.text :	{
+		_text = .; 	/* Text */
+		*(.text)
+		*(.text.*)
+		_etext = . ;
+	}
+
+.head.text bölümünün startup_32 içerdiğini unutmayın. Bir önceki bölümden hatırlayabilirsiniz:
+
+	__HEAD
+	.code32
+        ENTRY(startup_32)
+        ...
+        ...
+        ...
+
