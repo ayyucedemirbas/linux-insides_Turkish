@@ -188,7 +188,7 @@ Daha önce olduğu gibi, boot_params'a olan pointerı muhafaza etmek için rsi'y
 * 'output'  - sıkıştırılmış çekirdeğin başlangıç adresi;
 * 'output_len'  - sıkıştırılmış çekirdeğin boyutu;
 
-Tüm argümanlar [System V Application Binary Interface] (http://www.x86-64.org/documentation/abi.pdf)'e göre registerlardan geçirilecektir. Tüm hazırlıkları bitirdik ve şimdi çekirdeği açabiliriz.
+Tüm argümanlar [System V Application Binary Interface](http://www.x86-64.org/documentation/abi.pdf) 'e göre registerlardan geçirilecektir. Tüm hazırlıkları bitirdik ve şimdi çekirdeği açabiliriz.
 
 Çekirdeğin Açılması
 ----------------------------------------------------------------------------------
