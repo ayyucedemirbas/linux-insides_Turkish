@@ -209,4 +209,4 @@ Linkler
 * [RdRand instruction](https://en.wikipedia.org/wiki/RdRand)
 * [Time Stamp Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter)
 * [Programmable Interval Timers](https://en.wikipedia.org/wiki/Intel_8253)
-* [Previous part](https://github.com/0xAX/linux-insides/blob/v4.16/Booting/linux-bootstrap-4.md)
+* [Onceki bolum](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-4.md)
