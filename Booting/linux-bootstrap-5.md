@@ -181,9 +181,32 @@ Sonunda extract_kernel fonksiyonuna bir çağrı görebiliriz:
 ```
 Daha önce olduğu gibi, boot_params'a olan pointerı muhafaza etmek için rsi'yi stacke push ediyoruz. Ayrıca rsi içeriğini rdi'ye kopyalarız. Sonra, rsi'yi çekirdeğin sıkıştırmasının açılacağı alanı gösterecek şekilde ayarladık. Son adım, extract_kernel fonksiyonu için parametreleri hazırlamak ve çekirdeği açmak için çağırmaktır. extract_kernel fonksiyonu arch/x86/boot/compressed/misc.c kaynak kodu dosyasında tanımlanır ve altı argüman alır:
 
-* 'rmode' - bootloader tarafından veya erken çekirdek başlatma sırasında doldurulmuş boot_params yapısına bir pointer;
-* 'heap' - önyükleme heapinin başlangıç adresini temsil eden boot_heap için bir pointer;
-* 'input_data' - sıkıştırılmış çekirdeğin başlangıcına bir pointer ya da başka bir deyişle, arch/x86/boot/compressed/vmlinux.bin.bz2  dosyasına bir pointer
-* 'input_len' - sıkıştırılmış çekirdeğin boyutu;
-* 'output' - sıkıştırılmış çekirdeğin başlangıç adresi;
-* 'output_len' - sıkıştırılmış çekirdeğin boyutu;
+* 'rmode'  - bootloader tarafından veya erken çekirdek başlatma sırasında doldurulmuş boot_params yapısına bir pointer;
+* 'heap'  - önyükleme heapinin başlangıç adresini temsil eden boot_heap için bir pointer;
+* 'input_data'  - sıkıştırılmış çekirdeğin başlangıcına bir pointer ya da başka bir deyişle, arch/x86/boot/compressed/vmlinux.bin.bz2  dosyasına bir pointer
+* 'input_len'  - sıkıştırılmış çekirdeğin boyutu;
+* 'output'  - sıkıştırılmış çekirdeğin başlangıç adresi;
+* 'output_len'  - sıkıştırılmış çekirdeğin boyutu;
+
+Tüm argümanlar [System V Application Binary Interface] (http://www.x86-64.org/documentation/abi.pdf)'e göre registerlardan geçirilecektir. Tüm hazırlıkları bitirdik ve şimdi çekirdeği açabiliriz.
+
+Çekirdeğin Açılması
+----------------------------------------------------------------------------------
+//to be continued :)
+
+
+
+
+
+
+Linkler
+--------------------------------------------------------------------------------
+
+* [address space layout randomization](https://en.wikipedia.org/wiki/Address_space_layout_randomization)
+* [initrd](https://en.wikipedia.org/wiki/Initrd)
+* [long mode](https://en.wikipedia.org/wiki/Long_mode)
+* [bzip2](http://www.bzip.org/)
+* [RdRand instruction](https://en.wikipedia.org/wiki/RdRand)
+* [Time Stamp Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter)
+* [Programmable Interval Timers](https://en.wikipedia.org/wiki/Intel_8253)
+* [Previous part](https://github.com/0xAX/linux-insides/blob/v4.16/Booting/linux-bootstrap-4.md)
