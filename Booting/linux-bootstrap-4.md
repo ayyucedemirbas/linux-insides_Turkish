@@ -1,6 +1,6 @@
 
 ## Bölüm 4: Çekirdek Önyükleme Süreci
-================================================================================
+
 
 64-bit moda geçiş
 --------------------------------------------------------------------------------
@@ -169,6 +169,7 @@ Disassembly of section .head.text:
    1:   f6 86 11 02 00 00 40    testb  $0x40,0x211(%rsi)
 ```
 
-`objdump` bize `startup_32`nin adresinin `0` olduğunu söyler. Fakat aslında öyle değil. Şu anki amacımız aslında tam olarak nerede olduğumuzu bilmek. `rip` göreceli adreslemeyi(relative adressing) desteklediği için [Long modunda](https://en.wikipedia.org/wiki/Long_mode) yapmak oldukça basit ama biz şu anda [protected modundayız](https://en.wikipedia.org/wiki/Protected_mode). We will use common pattern to know the address of the `startup_32`.
+`objdump` bize `startup_32`nin adresinin `0` olduğunu söyler. Fakat aslında öyle değil. Şu anki amacımız aslında tam olarak nerede olduğumuzu bilmek. `rip` göreceli adreslemeyi(relative adressing) desteklediği için [Long modunda](https://en.wikipedia.org/wiki/Long_mode) yapmak oldukça basit ama biz şu anda [protected modundayız](https://en.wikipedia.org/wiki/Protected_mode)
+//to be continued
 
 
