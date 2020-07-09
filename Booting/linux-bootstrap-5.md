@@ -126,3 +126,64 @@ Sonraki iki leaq instructionı, rbs ve rbx registerlarının etkin adreslerini _
         ...
         ...
 
+
+.text sectionı, açma(decompression) kodunu içerir
+
+
+```assembly
+	.text
+relocated:
+...
+...
+...
+/*
+ * Do the decompression, and jump to the new kernel.. (Sıkıştırmayı aç, ve yeni kernela atla)
+ */
+...
+```
+Ve .rodata..compressed sıkıştırılmış çekirdek imajını içerir. Yani rsi _bss - 8 mutlak adresini içerecek ve rdi _bss - 8'in yer değiştirme relative adresini içerecektir. Bu adresleri registerlarda sakladığımız gibi, _bss adresini rcx registerına koyarız. vmlinux.lds.S linker scriptinde görebileceğiniz gibi, tüm bölümlerin sonunda setup/kernel kodu ile birlikte bulunur. Şimdi movsq komutuyla rsi'den rdi'ye, bir seferde 8 bayt veri kopyalamaya başlayabiliriz.Verileri kopyalamadan önce bir std instructionı uyguladığımızı unutmayın. 
+
+Bu, DF bayrağını belirler, yani rsi ve rdi azalacaktır. Başka bir deyişle, baytları geriye doğru kopyalayacağız. Sonunda, cld komutuyla DF bayrağını temizleriz ve boot_params yapısını rsi'ye geri yükleriz.
+
+Şimdi taşıma işleminden sonra .text bölümünün adresinde bir pointerımız var ve buna atlayabiliriz(jump):
+
+```assembly
+	leaq	relocated(%rbx), %rax
+	jmp	*%rax
+```
+Kernelın açılmasından önceki son dokunuşlar
+-------------------------------------------------------------------------------
+Önceki paragrafta .text bölümünün taşınan etiketle başladığını gördük. Yaptığımız ilk şey bss bölümünü(section) şu şekilde temizlemektir:
+
+```assembly
+	xorl	%eax, %eax
+	leaq    _bss(%rip), %rdi
+	leaq    _ebss(%rip), %rcx
+	subq	%rdi, %rcx
+	shrq	$3, %rcx
+	rep	stosq
+```
+
+.bss bölümünü başlatmamız gerekiyor, çünkü yakında C koduna geçeceğiz. Burada sadece eax'ı temizliyoruz, rdi'ye _bss ve rcx'e _ebss adreslerini koyuyoruz ve rep stosq komutuyla .bss'yi sıfırlarla dolduruyoruz.
+Sonunda extract_kernel fonksiyonuna bir çağrı görebiliriz:
+
+
+```assembly
+	pushq	%rsi
+	movq	%rsi, %rdi
+	leaq	boot_heap(%rip), %rsi
+	leaq	input_data(%rip), %rdx
+	movl	$z_input_len, %ecx
+	movq	%rbp, %r8
+	movq	$z_output_len, %r9
+	call	extract_kernel
+	popq	%rsi
+```
+Daha önce olduğu gibi, boot_params'a olan pointerı muhafaza etmek için rsi'yi stacke push ediyoruz. Ayrıca rsi içeriğini rdi'ye kopyalarız. Sonra, rsi'yi çekirdeğin sıkıştırmasının açılacağı alanı gösterecek şekilde ayarladık. Son adım, extract_kernel fonksiyonu için parametreleri hazırlamak ve çekirdeği açmak için çağırmaktır. extract_kernel fonksiyonu arch/x86/boot/compressed/misc.c kaynak kodu dosyasında tanımlanır ve altı argüman alır:
+
+* 'rmode' - bootloader tarafından veya erken çekirdek başlatma sırasında doldurulmuş boot_params yapısına bir pointer;
+* 'heap' - önyükleme heapinin başlangıç adresini temsil eden boot_heap için bir pointer;
+* 'input_data' - sıkıştırılmış çekirdeğin başlangıcına bir pointer ya da başka bir deyişle, arch/x86/boot/compressed/vmlinux.bin.bz2  dosyasına bir pointer
+* 'input_len' - sıkıştırılmış çekirdeğin boyutu;
+* 'output' - sıkıştırılmış çekirdeğin başlangıç adresi;
+* 'output_len' - sıkıştırılmış çekirdeğin boyutu;
