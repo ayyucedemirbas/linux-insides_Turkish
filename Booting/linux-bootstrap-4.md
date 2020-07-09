@@ -14,13 +14,13 @@ Bu yazı `Çekirdek önyükleme süreci` yazı dizisinin 4. yazısı. Bu bölüm
 ```assembly
 jmpl	*%eax
 ```
-32-bit giriş noktasının adresini içeren `eax` kaydını hatırlamış olmalısınız. Bunu [linux kernel x86 boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt) okuyabilirsiniz:
+32-bit giriş noktasının adresini içeren `eax` registerını hatırlamış olmalısınız. Bunu [linux kernel x86 boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt) okuyabilirsiniz:
 
 ```
 When using bzImage, the protected-mode kernel was relocated to 0x100000
 ```
 
-32-bit giriş noktasındaki kayıt değerlerine bakarak doğru olduğuna emin olalım:
+32-bit giriş noktasındaki register değerlerine bakarak doğru olduğuna emin olalım:
 
 ```
 eax            0x100000	1048576
@@ -41,7 +41,7 @@ fs             0x18	24
 gs             0x18	24
 ```
 
-Gördüğümüz üzere `cs` kaydı `0x10`(önceki bölümden hatırlayacağınız üzere bu, Global Descriptor Table'daki ikinci indekstir), `eip` kaydı `0x100000` içeriyor ve tüm bölütlerin temel adresi, kod bölütü dahil sıfırdır. Buradan fiziksel adreslerini elde edebiliriz ve boot protokolünde belirtildiği üzere bu `0:0x100000` veya kısaca `0x100000` olur. Şimdi 32-bit giriş noktasından başlayalım.
+Gördüğümüz üzere `cs` registerı `0x10`(önceki bölümden hatırlayacağınız üzere bu, Global Descriptor Table'daki ikinci indekstir), `eip` registerı `0x100000` içeriyor ve tüm bölütlerin temel adresi, kod bölütü dahil sıfırdır. Buradan fiziksel adreslerini elde edebiliriz ve boot protokolünde belirtildiği üzere bu `0:0x100000` veya kısaca `0x100000` olur. Şimdi 32-bit giriş noktasından başlayalım.
 
 32-bit giriş noktası
 --------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ vmlinux-objs-y := $(obj)/vmlinux.lds $(obj)/head_$(BITS).o $(obj)/misc.o \
 	$(obj)/piggy.o $(obj)/cpuflags.o
 ```
 
-`$(obj)/head_$(BITS).o` not edin. Bu, `$(BITS)` değerine göre hangi dosyaya bağlayacağımızı seçeceğiz, yani ya head_32.o ya da head_64.o dosyasına. `$(BITS)` başka bir yerde daha, [arch/x86/Makefile](https://github.com/torvalds/linux/blob/master/arch/x86/Makefile) içinde .config dosyasına dayanarak tanımlandı:
+`$(obj)/head_$(BITS).o` not edin. Bu, `$(BITS)` değerine göre hangi dosyaya linkleyeceğimizi seçeceğiz, yani ya head_32.o ya da head_64.o dosyasına. `$(BITS)` başka bir yerde daha, [arch/x86/Makefile](https://github.com/torvalds/linux/blob/master/arch/x86/Makefile) içinde .config dosyasına dayanarak tanımlandı:
 
 ```Makefile
 ifeq ($(CONFIG_X86_32),y)
@@ -172,4 +172,3 @@ Disassembly of section .head.text:
 `objdump` bize `startup_32`nin adresinin `0` olduğunu söyler. Fakat aslında öyle değil. Şu anki amacımız aslında tam olarak nerede olduğumuzu bilmek. `rip` göreceli adreslemeyi(relative adressing) desteklediği için [Long modunda](https://en.wikipedia.org/wiki/Long_mode) yapmak oldukça basit ama biz şu anda [protected modundayız](https://en.wikipedia.org/wiki/Protected_mode). We will use common pattern to know the address of the `startup_32`.
 
 
------- DEVAM EDILECEK ------
