@@ -192,12 +192,154 @@ Tüm argümanlar [System V Application Binary Interface](http://www.x86-64.org/d
 
 Çekirdeğin Açılması
 ----------------------------------------------------------------------------------
-//to be continued :)
+Önceki paragrafta gördüğümüz gibi, extract_kernel fonsiyonu arch/x86/boot/compressed/misc.c (https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/misc.c) kaynak kodu dosyasında tanımlanır ve altı argüman alır. Bu fonksiyon önceki bölümlerde gördüğümüz video/console başlatma ile başlar. Bunu tekrar yapmalıyız çünkü real modda (https://www.wikiwand.com/en/Real_mode) başlayıp başlamadığımızı veya bir önyükleyicinin (bootloader)kullanılıp kullanılmadığını veya önyükleyicinin 32 veya 64 bit önyükleme protokolünü kullanıp kullanmadığını bilmiyoruz.
 
+İlk başlatma adımlarından sonra, boş belleğin başlangıcına ve sonuna olan pointerları saklarız:
 
+        free_mem_ptr     = heap;
+        free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
+	
+Burada heap,extract_kernel fonksiyonunun arch/x86/boot/compressed/head_64.S (https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/misc.c)'e aktarılan ikinci parametresidir.
 
+        leaq	boot_heap(%rip), %rsi
+	
+Yukarıda gördüğünüz gibi boot_heap
 
+      boot_heap:
+	     .fill BOOT_HEAP_SIZE, 1, 0
+	     
+şeklinde tanımlanıyor
 
+burada BOOT_HEAP_SIZE, 0x10000'e (bir bzip2 çekirdeğinin 0x400000 değeri) genişleyen ve heapin boyutunu temsil eden bir makrodur.
+
+Heap pointerlarını başlattıktan sonra, sonraki adım arch/x86/boot/compressed/kaslr.c (https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/kaslr.c) kaynak kodu dosyasından select_random_location fonsiyonunu çağırmaktır. Fonksiyon adından tahmin edebileceğimiz gibi, açılmış çekirdeği yazmak için bir bellek konumu seçer. Sıkıştırılmış çekirdek imajını nerede açacağımızı bulmamız hatta seçmemiz garip gelebilir, ancak Linux çekirdeği, güvenlik nedeniyle çekirdeğin rastgele bir adrese sıkıştırılmasına izin veren kASLR (https://www.wikiwand.com/en/Address_space_layout_randomization)'ı destekler.
+
+Bir sonraki bölümde çekirdeğin yükleme adresinin nasıl randomize edildiğine bakacağız.
+
+Şimdi misc.c (https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/misc.c)'ye dönelim. Çekirdek imajının adresini aldıktan sonra, aldığımız rastgele adresin doğru bir şekilde hizalandığını ve genel olarak yanlış olmadığını kontrol etmeliyiz:
+
+	if ((unsigned long)output & (MIN_KERNEL_ALIGN - 1))
+		error("Destination physical address inappropriately aligned");
+
+	if (virt_addr & (MIN_KERNEL_ALIGN - 1))
+		error("Destination virtual address inappropriately aligned");
+
+	if (heap > 0x3fffffffffffUL)
+		error("Destination address too large");
+
+	if (virt_addr + max(output_len, kernel_total_size) > KERNEL_IMAGE_SIZE)
+		error("Destination virtual address is beyond the kernel mapping area");
+
+	if ((unsigned long)output != LOAD_PHYSICAL_ADDR)
+	    error("Destination address does not match LOAD_PHYSICAL_ADDR");
+
+	if (virt_addr != LOAD_PHYSICAL_ADDR)
+		error("Destination virtual address changed when not relocatable");
+		
+Tüm bu kontrollerden sonra aşina olduğumuz mesajı göreceğiz,
+ 
+               Decompressing Linux...
+Şimdi çekirdeği açmak için _decompress foksiyonunu çağırıyoruz,	
+
+	__decompress(input_data, input_len, NULL, NULL, output, output_len, NULL, error);
+_decompress fonksiyonunun implementasyonu, çekirdek derleme sırasında hangi açma algoritmasının seçildiğine bağlıdır:
+
+	#ifdef CONFIG_KERNEL_GZIP
+	#include "../../../../lib/decompress_inflate.c"
+	#endif
+
+	#ifdef CONFIG_KERNEL_BZIP2
+	#include "../../../../lib/decompress_bunzip2.c"
+	#endif
+
+	#ifdef CONFIG_KERNEL_LZMA
+	#include "../../../../lib/decompress_unlzma.c"
+	#endif
+
+	#ifdef CONFIG_KERNEL_XZ
+	#include "../../../../lib/decompress_unxz.c"
+	#endif
+
+	#ifdef CONFIG_KERNEL_LZO
+	#include "../../../../lib/decompress_unlzo.c"
+	#endif
+
+	#ifdef CONFIG_KERNEL_LZ4
+	#include "../../../../lib/decompress_unlz4.c"
+	#endif
+	
+Çekirdek açıldıktan sonra iki fonksiyon daha çağrılır: parse_elf ve handle_relocations. Bu fonksiyonların ana noktası, sıkıştırılmış çekirdek imajını bellekte doğru yerine taşımaktır. Bunun nedeni, açma işleminin in-place (https://www.wikiwand.com/en/In-place_algorithm) algoritması ile yapılması ve hala çekirdeği doğru adrese taşımamız gerektiğidir. Bildiğimiz gibi, çekirdek imajı bir ELF (https://www.wikiwand.com/en/Executable_and_Linkable_Format) çalıştırılabilir dosyasıdır. parse_elf foksiyonunun temel amacı, yüklenebilir segmentleri doğru adrese taşımaktır. Çekirdeğin yüklenebilir bölümlerini readelf programının çıktısında görebiliriz:
+
+	readelf -l vmlinux
+
+	Elf file type is EXEC (Executable file)
+	Entry point 0x1000000
+	There are 5 program headers, starting at offset 64
+
+	Program Headers:
+	  Type           Offset             VirtAddr           PhysAddr
+			 FileSiz            MemSiz              Flags  Align
+	  LOAD           0x0000000000200000 0xffffffff81000000 0x0000000001000000
+			 0x0000000000893000 0x0000000000893000  R E    200000
+	  LOAD           0x0000000000a93000 0xffffffff81893000 0x0000000001893000
+			 0x000000000016d000 0x000000000016d000  RW     200000
+	  LOAD           0x0000000000c00000 0x0000000000000000 0x0000000001a00000
+			 0x00000000000152d8 0x00000000000152d8  RW     200000
+	  LOAD           0x0000000000c16000 0xffffffff81a16000 0x0000000001a16000
+			 0x0000000000138000 0x000000000029b000  RWE    200000
+			 
+parse_elf fonksiyonunun amacı, bu segmentleri select_random_location fonksiyonundan aldığımız çıktı adresine yüklemektir. Bu fonksiyon ELF imzasını kontrol ederek başlar:
+
+	Elf64_Ehdr ehdr;
+	Elf64_Phdr *phdrs, *phdr;
+
+	memcpy(&ehdr, output, sizeof(ehdr));
+
+	if (ehdr.e_ident[EI_MAG0] != ELFMAG0 ||
+	    ehdr.e_ident[EI_MAG1] != ELFMAG1 ||
+	    ehdr.e_ident[EI_MAG2] != ELFMAG2 ||
+	    ehdr.e_ident[EI_MAG3] != ELFMAG3) {
+		error("Kernel is not a valid ELF file");
+		return;
+	}
+	
+ELF başlığı geçerli değilse, bir hata mesajı yazdırır ve durur. Geçerli bir ELF dosyanız varsa, verilen ELF dosyasındaki tüm program başlıklarını gözden geçiririz ve doğru 2 megabayt hizalanmış adresleri olan tüm yüklenebilir segmentleri çıktı arabelleğine kopyalarız:
+
+		for (i = 0; i < ehdr.e_phnum; i++) {
+			phdr = &phdrs[i];
+
+			switch (phdr->p_type) {
+			case PT_LOAD:
+	#ifdef CONFIG_X86_64
+				if ((phdr->p_align % 0x200000) != 0)
+					error("Alignment of LOAD segment isn't multiple of 2MB");
+	#endif
+	#ifdef CONFIG_RELOCATABLE
+				dest = output;
+				dest += (phdr->p_paddr - LOAD_PHYSICAL_ADDR);
+	#else
+				dest = (void *)(phdr->p_paddr);
+	#endif
+				memmove(dest, output + phdr->p_offset, phdr->p_filesz);
+				break;
+			default:
+				break;
+			}
+		}
+		
+Bu kadar.
+
+Bu andan itibaren tüm yüklenebilir segmentler doğru yerdedir.
+
+parse_elf fonksiyonundan sonraki adım handle_relocations fonksiyonunu çağırmaktır. Bu fonksiyonun uygulanması, CONFIG_X86_NEED_RELOCS çekirdek yapılandırma seçeneğine bağlıdır ve etkinleştirilmişse, bu fonksiyon çekirdek imajındaki adresleri ayarlar. Bu fonksiyon yalnızca çekirdek yapılandırması sırasında CONFIG_RANDOMIZE_BASE yapılandırma seçeneği etkinleştirilmişse çağrılır. handle_relocations fonksiyonunun uygulanması yeterince kolaydır. Bu fonksiyon, LOAD_PHYSICAL_ADDR değerini çekirdeğin temel yükleme adresinin değerinden çıkarır ve böylece çekirdeğin yükleme ile bağlandığı yer ile gerçekte yüklendiği yer arasındaki farkı elde ederiz. Bundan sonra, çekirdeğin yüklendiği gerçek adresi, çalıştırılmak için bağlandığı adresi ve çekirdek imajının sonundaki yer değiştirme tablosunu bildiğimiz için çekirdeği yeniden konumlandırabiliriz. 
+
+Çekirdek yer değiştirdikten sonra, extract_kernel fonksiyonundan arch / function to arch/x86/boot/compressed/head_64.S'e geri döneriz.
+
+Çekirdeğin adresi rax registerında olacak ve ona atlayacağız:
+
+	jmp	*%rax
+	
+Hepsi bu kadar. Şimdi çekirdekteyiz!
 
 Linkler
 --------------------------------------------------------------------------------
