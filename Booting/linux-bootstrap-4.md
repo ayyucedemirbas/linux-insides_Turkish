@@ -169,7 +169,78 @@ Disassembly of section .head.text:
    1:   f6 86 11 02 00 00 40    testb  $0x40,0x211(%rsi)
 ```
 
-`objdump` bize `startup_32`nin adresinin `0` olduğunu söyler. Fakat aslında öyle değil. Şu anki amacımız aslında tam olarak nerede olduğumuzu bilmek. `rip` göreceli adreslemeyi(relative adressing) desteklediği için [Long modunda](https://en.wikipedia.org/wiki/Long_mode) yapmak oldukça basit ama biz şu anda [protected modundayız](https://en.wikipedia.org/wiki/Protected_mode)
-//to be continued
+`objdump` bize `startup_32`nin adresinin `0` olduğunu söyler. Fakat aslında öyle değil. Şu anki amacımız aslında tam olarak nerede olduğumuzu bilmek. `rip` göreceli adreslemeyi(relative adressing) desteklediği için [Long modunda](https://en.wikipedia.org/wiki/Long_mode) yapmak oldukça basit ama biz şu anda [protected modundayız](https://en.wikipedia.org/wiki/Protected_mode)  Bir etiket tanımlamamız, ona çağrıda bulunmamız, ve heapin üst kısmını bir registera pop etmemiz gerekir:
 
+	call label
+	label: pop %reg
+	
+Bundan sonra,% reg ile belirtilen register etiketin adresini içerecektir. Linux çekirdeğinde startup_32 fonksiyonunu aramak için bu kalıbı kullanan koda bakalım:
 
+		leal	(BP_scratch+4)(%esi), %esp
+		call	1f
+	1:      popl	%ebp
+		subl	$1b, %ebp
+
+Önceki kısımdan hatırladığınız gibi, esi registerı, korumalı moda geçmeden önce doldurulan boot_params yapısının adresini içerir. boot_params yapısı, 0x1e4 ofset özel bir alan scratchi içerir. Bu dört baytlık alan, call instructionu için geçici bir stacktir. boot_params yapısının BP_scratch alanından sonra esp adresini dört bayt olarak ayarladık. BP_scratch alanının tabanına 4 bayt ekliyoruz, çünkü açıklandığı gibi geçici bir stack olacak ve stack x86_64 mimarisinde yukarıdan aşağıya doğru büyüyecek. Böylece stack pointerımız geçici stackin üstünü gösterecektir. Sonra, yukarıda tarif ettiğim modeli görebiliriz. 1f etiketine bir çağrı yaparız ve stackin üstünü ebp üzerine çıkarırız. Bunun nedeni, çağrının geçerli fonksiyonun dönüş adresini stackin üstünde depolamasıdır. Artık 1f etiketinin adresine sahibiz ve artık startup_32 ifonksiyonunun adresini kolayca alabiliriz. Etiketin adresini stackten aldığımız adresten çıkarmamız yeterlidir:
+
+	startup_32 (0x0)     +-----------------------+
+			     |                       |
+			     |                       |
+			     |                       |
+			     |                       |
+			     |                       |
+			     |                       |
+			     |                       |
+			     |                       |
+	1f (0x0 + 1f offset) +-----------------------+ %ebp - real physical address
+			     |                       |
+			     |                       |
+			     +-----------------------+
+			     
+startup_32 fonksiyonu 0x0 adresinde çalışacak şekilde linklenir ve bu da 1f'nin 0x0 + offs değerinin 1f'ye sahip olduğu anlamına gelir, bu da yaklaşık 0x21 bayttır. ebp registerı, 1f etiketinin gerçek fiziksel adresini içerir. Yani, ebp registerından 1f çıkarırsak, startup_32 fonksiyonunun gerçek fiziksel adresini alırız. Linux çekirdek önyükleme protokolü, korumalı mod çekirdeğinin tabanının 0x100000 olduğunu söylüyor. Bunu gdb ile doğrulayabiliriz. Hata ayıklayıcıyı başlatalım ve 1f adresine 0x100021 olan bir breakpoint ekleyelim. Bu doğruysa ebp registerında 0x100021 değerini göreceğiz:
+
+	$ gdb
+	(gdb)$ target remote :1234
+	Remote debugging using :1234
+	0x0000fff0 in ?? ()
+	(gdb)$ br *0x100022
+	Breakpoint 1 at 0x100022
+	(gdb)$ c
+	Continuing.
+
+	Breakpoint 1, 0x00100022 in ?? ()
+	(gdb)$ i r
+	eax            0x18	0x18
+	ecx            0x0	0x0
+	edx            0x0	0x0
+	ebx            0x0	0x0
+	esp            0x144a8	0x144a8
+	ebp            0x100021	0x100021
+	esi            0x142c0	0x142c0
+	edi            0x0	0x0
+	eip            0x100022	0x100022
+	eflags         0x46	[ PF ZF ]
+	cs             0x10	0x10
+	ss             0x18	0x18
+	ds             0x18	0x18
+	es             0x18	0x18
+	fs             0x18	0x18
+	gs             0x18	0x18
+	
+Bir sonraki instruction olan subl $ 1b,% ebp 'yi yürütürsek şunu göreceğiz:
+
+	(gdb) nexti
+	...
+	...
+	...
+	ebp            0x100000	0x100000
+	...
+	...
+	...
+
+Tamam, startup_32 fonksiyonunun adresinin 0x100000 olduğunu doğruladık. startup_32 etiketinin adresini öğrendikten sonra, long moda geçişe hazırlanabiliriz. Bir sonraki hedefimiz stacki kurmak ve CPU'nun long modu ve SSE (https://www.wikiwand.com/en/Streaming_SIMD_Extensions)'yi desteklediğini doğrulamaktır.
+
+Stack Setup ve CPU doğrulama
+----------------------------------------
+
+//To be continued
