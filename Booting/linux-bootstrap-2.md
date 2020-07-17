@@ -550,7 +550,7 @@ Linux-insides hakkındaki ikinci yazının sonuna geldik.Bir sonraki bölümde, 
 
 Sorularınız veya önerileriniz varsa, @0xAX twitter hesabımdan, mail yoluyla veya GitHub'da isuue açarak bana ulaşabilirsiniz.
 
-İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen linux-inside'a PR gönderin.
+İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen linux-inside'a PR gönderin. (Yazarın notu)
 
 
 Linkler
