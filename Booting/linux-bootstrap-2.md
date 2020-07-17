@@ -556,19 +556,18 @@ Sorularınız veya önerileriniz varsa, @0xAX twitter hesabımdan, mail yoluyla 
 Linkler
 
 
-- Protected mode
-- Protected mode
-- Long mode
-- Nice explanation of CPU Modes with code
-- How to Use Expand Down Segments on Intel 386 and Later CPUs
-- earlyprintk documentation
-- Kernel Parameters
-- Serial console
-- Intel SpeedStep
-- APM
-- EDD specification
-- TLDP documentation for Linux Boot Process (old)
-Previous Part
+* [Protected mode](http://en.wikipedia.org/wiki/Protected_mode)
+* [Protected mode](http://wiki.osdev.org/Protected_Mode)
+* [Long mode](http://en.wikipedia.org/wiki/Long_mode)
+* [Nice explanation of CPU Modes with code](http://www.codeproject.com/Articles/45788/The-Real-Protected-Long-mode-assembly-tutorial-for)
+* [How to Use Expand Down Segments on Intel 386 and Later CPUs](http://www.sudleyplace.com/dpmione/expanddown.html)
+* [earlyprintk documentation](https://github.com/torvalds/linux/blob/v4.16/Documentation/x86/earlyprintk.txt)
+* [Kernel Parameters](https://github.com/torvalds/linux/blob/v4.16/Documentation/admin-guide/kernel-parameters.rst)
+* [Serial console](https://github.com/torvalds/linux/blob/v4.16/Documentation/admin-guide/serial-console.rst)
+* [Intel SpeedStep](http://en.wikipedia.org/wiki/SpeedStep)
+* [APM](https://en.wikipedia.org/wiki/Advanced_Power_Management)
+* [EDD specification](http://www.t13.org/documents/UploadedDocuments/docs2004/d1572r3-EDD3.pdf)
+* [TLDP documentation for Linux Boot Process](http://www.tldp.org/HOWTO/Linux-i386-Boot-Code-HOWTO/setup.html) (old)
 
 
 
