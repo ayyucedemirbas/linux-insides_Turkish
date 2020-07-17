@@ -1,6 +1,6 @@
-Çekirdek Önyükleme Süreci Bölüm 2
+## Çekirdek Önyükleme Süreci Bölüm 2
 
-Çekirdek Kurulumunun İlk Adımları
+### Çekirdek Kurulumunun İlk Adımları
 
 Önceki bölümde linux çekirdeği içerisine dalmaya başladık ve çekirdek kurulum kodunun ilk bölümünü gördük. Arch/x86/boot/main.c'den main fonksiyonuna (C'de yazılan ilk fonksiyon) ilk çağrıda durduk.
 Bu bölümde, çekirdek kurulum kodunu araştırmaya ve 
