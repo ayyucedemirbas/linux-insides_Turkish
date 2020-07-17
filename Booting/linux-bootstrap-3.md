@@ -1,7 +1,7 @@
 
-Çekirdek Boot Süreci Bölüm 3.
+## Çekirdek Boot Süreci Bölüm 3.
 
-Video Modunu Başlatma ve Korumalı Moda Geçiş
+### Video Modunu Başlatma ve Korumalı Moda Geçiş
 
 Bu yazı, çekirdeğin boot süreci yazı dizisinin 3. yazısı. Önceki bölümde, set.video rutininin çağrısından önce main.c dosyasından durduk. Bu bölümde şunu göreceğiz:
 
@@ -43,7 +43,7 @@ Linux çekirdeği boot protokolünü okuyabildiğimiz için:
 Böylece gruba veya başka bir bootloader yapılandırma dosyasına vga seçeneğini ekleyebiliriz ve bu seçeneği çekirdek komut satırına geçireceğiz. Bu seçenek, açıklamada belirtildiği gibi farklı değerlere sahip olabilir. Örneğin, bir tam sayı 0xFFFD olabilir . Vga'ya geçerseniz, şu şekilde bir menü göreceksiniz:
 
 
- ![alt tag](https://camo.githubusercontent.com/fc6d3f91001fe97d4036d3d37bbdac89a3e5d3b9/687474703a2f2f6f6935392e74696e797069632e636f6d2f656a637a38312e6a7067)
+ ![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/video_mode_setup_menu.png)
 
 
 Bir video modu seçmenizi isteyecektir. Uygulanmasına bakacağız ancak buna  geçmeden önce başka şeylere bakmamız gerekiyor.
@@ -596,3 +596,14 @@ enabled_a20 fonksiyonu başarısız olursa bir hata mesajı yazdırır ve die fo
 		hlt
 		jmp	die
 		.size	die, .-die
+		
+
+Linkler
+------------------------------------------
+* [VGA](http://en.wikipedia.org/wiki/Video_Graphics_Array)
+* [VESA BIOS Extensions](http://en.wikipedia.org/wiki/VESA_BIOS_Extensions)
+* [Data structure alignment](http://en.wikipedia.org/wiki/Data_structure_alignment)
+* [Non-maskable interrupt](http://en.wikipedia.org/wiki/Non-maskable_interrupt)
+* [A20](http://en.wikipedia.org/wiki/A20_line)
+* [GCC designated inits](https://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Designated-Inits.html)
+* [GCC type attributes](https://gcc.gnu.org/onlinedocs/gcc/Type-Attributes.html)
