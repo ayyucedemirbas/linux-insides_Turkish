@@ -116,7 +116,7 @@ Bu, QEMU'ya yeni bir disk imajı olarak oluşturduğumuz önyükleme ikili dosya
 Şunu göreceksiniz;
 
 
-![alt tag](https://camo.githubusercontent.com/0c5598327b189059cac641cc7bb963dfdda96cf2/687474703a2f2f6f6936302e74696e797069632e636f6d2f327162777570302e6a7067)
+![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/simple_bootloader.png)
 
 
 
@@ -220,7 +220,7 @@ Yani, önyükleyici kontrolü çekirdeğe aktardığında şuradan başlar:
 Burada X, çekirdek önyükleme sektörünün yüklenmekte olduğu adresidir. Benim durumumda; X,  0x10000'dır. Bellek dökümünde görebileceğimiz gibi:
 
 
-![alt tag](https://camo.githubusercontent.com/a450cde6ad2b342ce5d8a312c185f6bf80b065b6/687474703a2f2f6f6935372e74696e797069632e636f6d2f3136626b636f322e6a7067)
+![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/kernel_first_address.png)
 
 Önyükleyici, Linux çekirdeğini belleğe yükledi, header alanlarını doldurdu ve karşılık gelen bellek adresine atladı. Artık doğrudan çekirdek kurulum koduna geçebiliriz.
 
@@ -237,7 +237,7 @@ Uzun zaman önce, Linux çekirdeği kendi önyükleyicisini kullanıyordu. Ancak
 şunu göreceksiniz:
 
 
-![alt tag](https://camo.githubusercontent.com/cff3757c397b6d4ebf2706a874a729cad5eefaef/687474703a2f2f6f6936302e74696e797069632e636f6d2f723032786b7a2e6a7067)
+![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/try_vmlinuz_in_qemu.png)
 
 
 Aslında header.S, MZ'den başlar (yukarıdaki resme bakın), PE hata mesajını yazdıran ve aşağıdaki PE header'ı:
@@ -361,7 +361,7 @@ Bu üç senaryonun hepsine sırayla bakalım:
 
 Burada, dx (bootloader tarafından verilen sp içeriyor) 4 bayt'a ve sıfır olup olmadığına ilişkin bir hizaya geldiklerini görebiliriz. Sıfır ise, dx'e 0xfffc (64 KB'lik maksimum segment boyutundan önce 4 bayt hizalı adres) koyarız. Sıfır değilse, önyükleyici (benim durumumda 0xf7f4) tarafından verilen sp'yi kullanmaya devam ederiz. Bundan sonra, ax değerini 0x10000'lük doğru segment adresini ss içine yerleştirdik ve doğru bir sp ayarladı. Artık doğru bir yığınımız var:
 
-![alt tag](https://camo.githubusercontent.com/fd6508ced7cf2bc23a5401388f47c4bf75ffa53b/687474703a2f2f6f6935382e74696e797069632e636f6d2f313669776369732e6a7067)
+![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/stack1.png)
 
 - İkinci senaryoda, (ss! = Ds). Önce, _end'in değerini (kurulum kodunun sonundaki adres) dx'e koyar ve yığını kullanıp kullanamayacağımızı test etmek için testb komutunu kullanarak loadflags başlık alanını kontrol ederiz. Loadflags, aşağıdaki gibi tanımlanan bir bit maskesi header'ı dır:
 
@@ -390,12 +390,12 @@ CAN_USE_HEAP biti ayarlanmışsa, heap_end_ptr'ı dx'e (_end'i işaret eder) yer
 
 
 
- ![alt tag](https://camo.githubusercontent.com/49e2c3b70d081f745bc6e53f72df96b806e27cb6/687474703a2f2f6f6936322e74696e797069632e636f6d2f6472376235772e6a7067)
+ ![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/stack2.png)
 
 
 CAN_USE_HEAP ayarlanmadığında _end ile _end + STACK_SIZE arasında en az bir yığın kullanırız:
 
-![alt tag](https://camo.githubusercontent.com/33f54e2576edfb855cc90f4669fd49c5556a1aa6/687474703a2f2f6f6936302e74696e797069632e636f6d2f323877303531792e6a7067)
+![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/minimal_stack.png)
 
 BSS Kurulumu
 
@@ -419,7 +419,7 @@ BSS bölümü statik olarak ayrılmış, başlatılmamış verileri depolamak i�
 İlk olarak, __bss_start adresi di'ye taşınır. Daha sonra, _end + 3 adresi (+3 - 4 bayta hizalanır) cx'e taşınır. Eax kaydı silinir (bir xor komutu kullanılarak) ve bss bölüm boyutu (cx-di) hesaplanır ve cx'e yerleştirilir. Daha sonra, cx dörde bölünür (bir 'word' boyutu) ve stosl talimatı eax (sıfır) değerini di'nin gösterdiği adrese depolayarak di'yi dört arttırarak tekrar cx'e kadar tekrarlar Sıfıra ulaşır). Bu kodun net etkisi, sıfırların __bss_start'dan _end'e bellekteki tüm kelimeleri kullanarak yazıldığıdır:
 
 
-![alt tag](https://camo.githubusercontent.com/76b4eece266aae9a5e435c07744abdc2fb7fd6fa/687474703a2f2f6f6935392e74696e797069632e636f6d2f32396d326579722e6a7067)
+![alt tag](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/images/bss.png)
 
 
 Main'e Atlamak 
@@ -436,16 +436,17 @@ Linux-insides hakkındaki ilk yazının sonuna geldik. Sorularınız veya öneri
 
 Linkler
 
-- Intel 80386 programmer's reference manual 1986
-- Minimal Boot Loader for Intel® Architecture
-- 8086
-- 80386
-- Reset vector
-- Real mode
-- Linux kernel boot protocol
-- CoreBoot developer manual
-- Ralf Brown's Interrupt List
-- Power supply
-- Power good signal
+  * [Intel 80386 programmer's reference manual 1986](http://css.csail.mit.edu/6.858/2014/readings/i386.pdf)
+  * [Minimal Boot Loader for Intel® Architecture](https://www.cs.cmu.edu/~410/doc/minimal_boot.pdf)
+  * [Minimal Boot Loader in Assembler with comments](https://github.com/Stefan20162016/linux-insides-code/blob/master/bootloader.asm)
+  * [8086](https://en.wikipedia.org/wiki/Intel_8086)
+  * [80386](https://en.wikipedia.org/wiki/Intel_80386)
+  * [Reset vector](https://en.wikipedia.org/wiki/Reset_vector)
+  * [Real mode](https://en.wikipedia.org/wiki/Real_mode)
+  * [Linux kernel boot protocol](https://www.kernel.org/doc/Documentation/x86/boot.txt)
+  * [coreboot developer manual](https://www.coreboot.org/Developer_Manual)
+  * [Ralf Brown's Interrupt List](http://www.ctyme.com/intr/int.htm)
+  * [Power supply](https://en.wikipedia.org/wiki/Power_supply)
+  * [Power good signal](https://en.wikipedia.org/wiki/Power_good_signal)
 
 
