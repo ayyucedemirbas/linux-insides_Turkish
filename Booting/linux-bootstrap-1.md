@@ -111,7 +111,7 @@ Burada, 0xe9 olan jmp komutunun opcode'u ve _start-(. + 2) adresindeki hedef adr
      nasm -f bin boot.nasm && qemu-system-x86_64 boot
 
 
-Bu, QEMU'ya yeni bir disk imajı olarak oluşturduğumuz önyükleme ikili dosyasını kullanmasını söyleyecektir. Yukarıdaki montaj koduyla oluşturulan ikili, önyükleme sektörünün gerekliliklerini yerine getirdiğinden (orijin 0x7c00 olarak ayarlanır ve sihirli diziyle biter) ikili dosyayı bir disk imajının ana önyükleme kaydı (MBR) olarak değerlendirecektir.
+Bu, QEMU'ya yeni bir disk imajı olarak oluşturduğumuz önyükleme ikili dosyasını kullanmasını söyleyecektir. Yukarıdaki assembly koduyla oluşturulan ikili, önyükleme sektörünün gerekliliklerini yerine getirdiğinden (orijin 0x7c00 olarak ayarlanır ve sihirli diziyle biter) ikili dosyayı bir disk imajının ana önyükleme kaydı (MBR) olarak değerlendirecektir.
 
 Şunu göreceksiniz;
 
@@ -135,7 +135,7 @@ NOT: Yukarıda açıklandığı gibi, CPU Real Mode'dadır; Real Mode'da, hafız
 
 PhysicalAddress = Segment Selector * 16 + Offset
 
-Tıpkı daha önce açıklandığı gibi. Sadece 16 bit genel amaçlı kayıtlarımız var; 16 bitlik bir kaydın maksimum değeri 0xffff, yani en büyük değerleri alırsak sonuç şöyle olacaktır:
+Tıpkı daha önce açıklandığı gibi. Sadece 16 bit genel amaçlı registerlarımız var; 16 bitlik bir kaydın maksimum değeri 0xffff, yani en büyük değerleri alırsak sonuç şöyle olacaktır:
 
      >>> hex((0xffff * 16) + 0xffff)
     '0x10ffef'
@@ -163,6 +163,8 @@ Bu yazının başında CPU tarafından yürütülen ilk talimatın 0xFFFFFFF0 ad
 
 
 Bootloader
+--------------
+
 
 
 GRUB 2 ve syslinux gibi Linux'u önyükleyebilen bir dizi önyükleyici var. Linux çekirdeğinin Linux desteği uygulamak için bir önyükleyicinin gereksinimlerini belirten bir Önyükleme protokolü vardır. Bu örnek, GRUB 2'yi açıklayacaktır.
@@ -226,6 +228,8 @@ Burada X, çekirdek önyükleme sektörünün yüklenmekte olduğu adresidir. Be
 
 
 Çekirdek Kurulumunun Başlangıcı
+-----------------
+
 
 Son olarak, çekirdekteyiz! Teknik olarak, çekirdek henüz çalışmıyor; İlk olarak çekirdeği, bellek yöneticisini, süreç yöneticisini vb. Kurmamız gerekir. Çekirdek kurulumunun çalışması, _start'da arch / x86 / boot / header.S'den başlar. Önceden birkaç talimat olduğundan ilk bakışta biraz tuhaf. 
 
