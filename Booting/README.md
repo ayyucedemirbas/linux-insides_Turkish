@@ -12,4 +12,4 @@ Bu bölüm, Linux çekirdeğinin önyükleme işlemini açıklar. İşte size Li
 
 [Sıkıştırılmış çekirdeği açmak](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-5.md) - sıkıştırılmış çekirdeğin açılmasından önceki hazırlığı ve doğrudan açmanın detaylarını açıklar.
 
-[Linux çekirdeğinin yüklenme adresinin rastgele hale getirilmesi(https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-6.md)
+[Linux çekirdeğinin yüklenme adresinin rastgele hale getirilmesi](https://github.com/ayyucedemirbas/linux-insides_Turkish/blob/master/Booting/linux-bootstrap-6.md)
