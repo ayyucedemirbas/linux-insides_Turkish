@@ -66,7 +66,7 @@ Bu parametre, arch/x86/boot/compressed/head_64.S (https://github.com/torvalds/li
 
     leaq	input_data(%rip), %rdx 
     
-input_data küçük mkpiggy programı tarafından oluşturulur. Linux çekirdeğini kendiniz derlemeyi denediyseniz, bu program tarafından üretilen çıktıyı linux/arch/x86/boot/compressed/piggy.S kaynak kodu dosyasında bulabilirsiniz. Benim durumumda bu dosya şöyle görünüyor:
+input_data küçük mkpiggy programı tarafından oluşturulur. Linux çekirdeğini kendiniz derlemeyi denediyseniz, bu program tarafından üretilen çıktıyı linux/arch/x86/boot/compressed/piggy.S (https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/compressed/mkpiggy.c) kaynak kodu dosyasında bulabilirsiniz. Benim durumumda bu dosya şöyle görünüyor:
 
     .section ".rodata..compressed","a",@progbits
     .globl z_input_len
