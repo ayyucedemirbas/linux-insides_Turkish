@@ -18,31 +18,31 @@ Bu Linux çekirdeği ile ilgili bir dizi yazı olsa da, çekirdek kodundan başl
 
 80386 ve sonraki CPU'lar, bilgisayar sıfırlandıktan sonra CPU kayıtlarında aşağıdaki önceden tanımlı verileri tanımlar:
 
-	```
-    IP          0xfff0
-    CS selector 0xf000
-    CS base     0xffff0000
-    ```
+```
+IP          0xfff0
+CS selector 0xf000
+CS base     0xffff0000
+```
 
 İşlemci Real Mode'da çalışmaya başlar. Biraz geriye dönelim ve bu modda bellek bölütlemeyi anlamaya çalışalım. Real Mode, tüm x86 uyumlu işlemcilerde, 8086'dan modern Intel 64 bit CPU'lara kadar desteklenir. 8086 işlemci, 20 bitlik bir adres veri yoluna sahiptir, bu da 0-0x100000 adres alanı (1 megabayt) ile çalışabileceği anlamına gelir. Ancak, yalnızca maksimum 2 ^ 16 - 1 adresine veya 0xffff (64 kilobayt) olan 16 bitlik yazmaçlara sahiptir. Bellek bölütleme, mevcut tüm adres alanını kullanmak için kullanılır. Tüm bellek, 65536 bayt (64 KB) küçük, sabit boyutlu bölümlere ayrılmıştır. 16 KB'lık yazmaçlarla 64 KB'ın üstündeki hafızayı ele alamayacağımızdan, alternatif bir yöntem tasarlanmıştır. Bir adres, iki bölümden oluşur: bir taban adresi olan bir Segment Selector ve bu taban adresinden bir uzaklık. Real Mode'da, bir Segment Selector'ın ilişkili taban adresi Segment Selector * 16'dır. Dolayısıyla, bellekte fiziksel bir adres almak için Segment Selector parçayı 16 ile çarpıp ofset eklemeliyiz:
 
-    ```
-    PhysicalAddress = Segment Selector * 16 + Offset
-    ```
+```
+PhysicalAddress = Segment Selector * 16 + Offset
+```
 Örneğin, ```CS:IP``` ```0x2000:0x0010``` ise, karşılık gelen fiziksel adres:
    
-   ```
-	python
-    >>> hex((0x2000 << 4) + 0x0010)
-    '0x20010'
-	 ```
+```
+python
+>>> hex((0x2000 << 4) + 0x0010)
+'0x20010'
+```
 Ancak, en büyük Segment Selector'ını ve offsetini ```0xffff:0xffff``` olarak alırsak, sonuçta adres:
 
-	```
-	python
-    >>> hex((0xffff << 4) + 0xffff)
-    '0x10ffef'
-	```
+```
+python
+>>> hex((0xffff << 4) + 0xffff)
+'0x10ffef'
+```
 	
  ilk megabaytı geçen ```65520``` baytıdır. Gerçek modda yalnızca bir megabayt erişilebilir olduğundan, ```0x10ffef```, [A20 satırı](https://en.wikipedia.org/wiki/A20_line) devre dışı bırakıldığında ```0x00ffef``` olur.	
 
@@ -54,15 +54,15 @@ Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register d
 
 Başlangıç adresi; taban adresi, EIP kaydındaki değere eklenerek oluşturulmuştur:
 
-    ```
-	python
-    >>> 0xffff0000 + 0xfff0
-    '0xfffffff0'
-    ```
+```
+python
+>>> 0xffff0000 + 0xfff0
+'0xfffffff0'
+```
 
 4GB (16 bayt) olan ```0xfffffff0``` elde ediyoruz. Bu noktaya [reset vektörü](https://en.wikipedia.org/Reset_vector) denir. Bu, CPU'nun sıfırlamadan sonra yürütülecek ilk talimatı bulmasını beklediği hafıza yeridir. Genellikle [BIOS](https://en.wikipedia.org/wiki/BIOS) giriş noktasına işaret eden bir atlama (```jmp```) yönergesi içerir. Örneğin, [coreboot](https://www.coreboot.org) kaynak koduna (```src/cpu/x86/16bit/reset16.inc```) bakarsak, şunu görürüz:
         
-	```	
+```	
     /* SPDX-License-Identifier: GPL-2.0-only */
 
 	.section ".reset", "ax", %progbits
@@ -101,7 +101,7 @@ SECTIONS {
 
 Şimdi BIOS başatılıyor; BIOS'u başlatıp denetledikten sonra BIOS'un önyüklenebilir bir aygıt bulması gerekir. Bir önyükleme emri, BIOS'un hangi aygıtlardan önyükleme yapmaya çalıştığını kontrol eden BIOS yapılandırmasında saklanır. BIOS bir sabit diskten önyükleme yapmaya çalışırken bir önyükleme sektörü bulmaya çalışıyor. [MBR bölüm düzeniyle](https://en.wikipedia.org/wiki/Master_boot_record) bölünmüş sabit sürücüler üzerinde önyükleme sektörü, her sektör ```512``` bayt olan ilk sektörün ilk ```446``` baytında depolanır. İlk sektörün son iki baytı ```0x55``` ve ```0xaa'dır``` ve bu, BIOS'a bu aygıtın önyüklenebilir olduğunu belirtir. Örneğin:
 
-     ```
+```
 	 assembly
      ;
      ; Note: this example is written in Intel Assembly syntax
@@ -122,13 +122,13 @@ SECTIONS {
 
      db 0x55
      db 0xaa
-     ```
+ ```
 
 Şu komutla derleyin ve çalıştırın: 
 
-     ```
-     nasm -f bin boot.nasm && qemu-system-x86_64 boot
-     ```
+```
+ nasm -f bin boot.nasm && qemu-system-x86_64 boot
+```
 
 Bu, [QEMU'ya](https://www.qemu.org/) yeni bir disk imajı olarak oluşturduğumuz ```önyükleme``` ikili dosyasını kullanmasını söyleyecektir. Yukarıdaki assembly koduyla oluşturulan ikili, önyükleme sektörünün gerekliliklerini yerine getirdiğinden (orijin ```0x7c00``` olarak ayarlanır ve sihirli diziyle biter) QEMU ikili dosyayı bir disk imajının ana önyükleme kaydı (MBR) olarak değerlendirecektir.
 
@@ -142,10 +142,10 @@ Bu örnekte, kodun ```16-bit``` gerçek modda yürütüleceğini ve bellekte ```
 
 ```objdump``` kullanarak bunun bir ikili dökümünü görebilirsiniz:
     
-	```
-    nasm -f bin boot.nasm
-    objdump -D -b binary -mi386 -Maddr16,data16,intel boot
-    ```
+```
+nasm -f bin boot.nasm
+objdump -D -b binary -mi386 -Maddr16,data16,intel boot
+```
 
 Gerçek dünyadaki bir önyükleme sektörü, önyükleme işlemini devam ettirmek için bir koda ve bir bit sayısı ve bir ünlem işareti yerine bir bölüm tablosuna sahiptir :) Bu noktadan sonra, BIOS, kontrolü önyükleyiciye devreder.
 
@@ -157,31 +157,31 @@ PhysicalAddress = Segment Selector * 16 + Offset
 
 Tıpkı daha önce açıklandığı gibi. Sadece 16 bit genel amaçlı registerlarımız var; 16 bitlik bir kaydın maksimum değeri ```0xffff```, yani en büyük değerleri alırsak sonuç şöyle olacaktır:
 
-	```
-	python
-     >>> hex((0xffff * 16) + 0xffff)
-    '0x10ffef'
-	```
+```
+python
+>>> hex((0xffff * 16) + 0xffff)
+'0x10ffef'
+```
 Burada 0x10ffef ```(1MB + 64KB - 16b) - 1'e``` eşittir. Bunun tersine, [8086](https://en.wikipedia.org/wiki/Intel_8086) işlemci (Real Mode'lu ilk işlemci), 20 bitlik bir adres satırına sahiptir. ```2^20 = 1048576```, 1MB ve ```2^20 - 1``` olduğu için, mevcut kullanılabilir belleğin 1MB olduğu anlamına gelir. Genel Real Mode'un hafıza haritası aşağıdaki gibidir:
 
-    ```
-    0x00000000 - 0x000003FF - Real Mode Interrupt Vector Table 
-    0x00000400 - 0x000004FF - BIOS Data Area
-    0x00000500 - 0x00007BFF - Unused
-    0x00007C00 - 0x00007DFF - Our Bootloader
-    0x00007E00 - 0x0009FFFF - Unused
-    0x000A0000 - 0x000BFFFF - Video RAM (VRAM) Memory
-    0x000B0000 - 0x000B7777 - Monochrome Video Memory
-    0x000B8000 - 0x000BFFFF - Color Video Memory
-    0x000C0000 - 0x000C7FFF - Video ROM BIOS
-    0x000C8000 - 0x000EFFFF - BIOS Shadow Area
-    0x000F0000 - 0x000FFFFF - System BIOS
-    ```
+```
+0x00000000 - 0x000003FF - Real Mode Interrupt Vector Table 
+0x00000400 - 0x000004FF - BIOS Data Area
+0x00000500 - 0x00007BFF - Unused
+0x00007C00 - 0x00007DFF - Our Bootloader
+0x00007E00 - 0x0009FFFF - Unused
+0x000A0000 - 0x000BFFFF - Video RAM (VRAM) Memory
+0x000B0000 - 0x000B7777 - Monochrome Video Memory
+0x000B8000 - 0x000BFFFF - Color Video Memory
+0x000C0000 - 0x000C7FFF - Video ROM BIOS
+0x000C8000 - 0x000EFFFF - BIOS Shadow Area
+0x000F0000 - 0x000FFFFF - System BIOS
+```
 Bu yazının başında CPU tarafından yürütülen ilk talimatın ```0xFFFFFFF0``` adresinde olduğunu yazmıştım, ```0xFFFFFF'den``` (1MB) daha büyüktür. CPU Real Mode'da bu adrese nasıl erişebilir? Cevap [coreboot](https://www.coreboot.org/Developer_Manual/Memory_map) belgelerinde verilmiştir:
 
-	```
-    0xFFFE_0000 - 0xFFFF_FFFF: 128 kilobyte ROM mapped into address space
-	```
+```
+0xFFFE_0000 - 0xFFFF_FFFF: 128 kilobyte ROM mapped into address space
+```
 Çalıştırmanın başlangıcında BIOS RAM'de değil, ancak ROM'da bulunur. 
 
 
@@ -196,9 +196,9 @@ BIOS, bir önyükleme aygıtı seçti ve kontrolü önyükleme kesimi koduna akt
 
 Çekirdek önyükleme protokolünü okuyabileceğimiz gibi, önyükleyici, çekirdek kurulum kodundan ```0x01f1``` ofsetten başlayan çekirdek kurulum header'ının bazı alanlarını okumalı ve doldurmalıdır. Önyükleme'deki [linker script](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/setup.ld) koduna bu offsetin değerini doğrulamak için bakabilirsiniz. Çekirdek header'ı  [arch/86/boot/header.S](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S),  aşağıdaki koddan başlıyor:
 
-	  ```
-	  assembly
-      .globl hdr
+```
+assembly
+.globl hdr
      hdr:
          setup_sects: .byte 0
          root_flags:  .word ROOT_RDONLY
@@ -207,14 +207,14 @@ BIOS, bir önyükleme aygıtı seçti ve kontrolü önyükleme kesimi koduna akt
          vid_mode:    .word SVGA_MODE
          root_dev:    .word 0
          boot_flag:   .word 0xAA55
-	  ```
+```
 	  
 
 Önyükleyici bunu ve [bu örnek](https://github.com/torvalds/linux/blob/v4.16/Documentation/x86/boot.txt#L354) gibi Linux önyükleme protokolünde yalnızca ```yazma``` olarak işaretlenen başlıkların geri kalanını komut satırından alınan veya önyükleme sırasında hesaplanan değerlerle doldurmalıdır. (Şimdilik çekirdek kurulum başlığının tüm alanları için tam açıklamaları ve açıklamaları gözden geçirmeyeceğiz, ancak çekirdeğin bunları nasıl kullandığını tartışırken yapacağız.[boot protokolü](https://github.com/torvalds/linux/blob/v4.16/Documentation/x86/boot.txt#L156))'nde tüm alanların bir tanımını bulabilirsiniz.
 
 Çekirdek önyükleme protokolünde görebildiğimiz gibi, çekirdek yüklendikten sonra bellek aşağıdaki gibi eşleştirilir:
 
-	   ```
+```
 	   shell
              | Protected-mode kernel  |
      100000   +------------------------+
@@ -238,13 +238,13 @@ X+08000  +------------------------+
              000600   +------------------------+
               | BIOS use only          |
              000000   +------------------------+
-		 ```
+```
 
 Yani, önyükleyici kontrolü çekirdeğe aktardığında, ilgili kod şuradan başlar:
 	
-    ```
+```
      X + sizeof(KernelBootSector) + 1
-	 ```
+```
 	 
 Burada ```X```, çekirdek önyükleme sektörünün yüklenmekte olduğu adresidir. Benim durumumda; ```X```,  ```0x10000```'dır. Bellek dökümünde görebileceğimiz gibi:
 
@@ -259,10 +259,10 @@ Burada ```X```, çekirdek önyükleme sektörünün yüklenmekte olduğu adresid
 Sonunda, çekirdeğin içindeyiz! Teknik olarak, çekirdek henüz çalışmadı. İlk olarak, çekirdek kurulum kısmı, açılış ve bellek yönetimi ile ilgili bazı şeyleri, birkaçınının yapılandırılmasını ayarlamalıdır. Tüm bunlar yapıldıktan sonra, çekirdek kurulum kısmı gerçek çekirdeği açar ve ona atlar. Kurulum bölümünün yürütülmesi, [_start](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L292) sembolündeki [arch/x86/boot/header.S](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S) adresinden başlar.
 
 İlk bakışta biraz garip görünebilir, çünkü ondan önce birkaç talimat var. Uzun zaman önce, Linux çekirdeğinin kendi bootloader'ı vardı. Ancak şimdi, örneğin,
-	
-	```
+
+```
     qemu-system-x86_64 vmlinuz-3.18-generic
-	```
+```
 
 şunu göreceksiniz:
 
@@ -272,8 +272,8 @@ Sonunda, çekirdeğin içindeyiz! Teknik olarak, çekirdek henüz çalışmadı.
 Aslında ```header.S```, [MZ](https://en.wikipedia.org/wiki/DOS_MZ_exeecutable)'den başlar (yukarıdaki resme bakın), hata mesajını yazdıran ve aşağıdaki [PE](https://en.wikipedia.org/wiki/Portable_Executable) header'ı:
 
 
-	```
-	 assembly
+```
+assembly
      #ifdef CONFIG_EFI_STUB
      # "MZ", MS-DOS header
      .byte 0x4d
@@ -285,34 +285,34 @@ Aslında ```header.S```, [MZ](https://en.wikipedia.org/wiki/DOS_MZ_exeecutable)'
      pe_header:
         .ascii "PE"
         .word 0
-	```
+```
 
 [UEFI](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface) ile bir işletim sistemini yüklemek için buna ihtiyaç duyuyor. Şu anda bunun iç işleyişine bakmayacağız ve ilerleyen bölümlerde de bunu ele alacağız.
 
 Gerçek çekirdek kurulum giriş noktası şöyledir:
 	
-	```
+```
 	assembly
      // header.S line 292
      .globl _start
      _start:
-	```
+```
 
 Önyükleyici(GRUB2 ve diğerleri), bu noktayı (```MZ```'den ```0x200``` ofset) biliyor ve ```header.S```'nin bir hata mesajı yazdıran ```.bstext``` bölümünden başlamasına rağmen, doğrudan ona bir sıçrama yapıyor:
 	
-	```
+```
 	 //
      // arch/x86/boot/setup.ld
      //
      . = 0;                    // current position
       .bstext : { *(.bstext) }  // put .bstext section to position 0
      .bsdata : { *(.bsdata) }
-	```
+```
 
 Çekirdek kurulum giriş noktası şöyledir:
 
 
-	```
+```
 	assembly
     .globl _start
     _start:
@@ -322,25 +322,25 @@ Gerçek çekirdek kurulum giriş noktası şöyledir:
         //
        // rest of the header
        //
-	```
+```
 	
 Burada ```start_of_setup-1f``` noktasına atlayan bir ```jmp``` komut opcode (```0xeb```) görebilirsiniz. ```Nf``` gösteriminde ```2f```, aşağıdaki yerel ```2:``` etiketini belirtir; Bizim durumumuzda, atlama sonrasında bulunan etiket ```1:``` ve kurulum başlığının geri kalanını içeriyor. Kurulum başlığının hemen sonrasında, ```.entrytext``` bölümünü görüyoruz; bu bölüm, ```start_of_setup``` etiketinden başlıyor.
 
 Aslında çalışan ilk kod budur (elbette önceki atlama talimatları hariç). Çekirdek kurulumu bootloader'dan kontrol aldıktan sonra, ilk ```jmp``` komutu, çekirdek gerçek Real Mode'unun başlangıcından itibaren ```0x200``` ofset'inde, yani ilk 512 bayttan sonra yer alır. Bu, hem Linux çekirdeği önyükleme protokolünü okuyabilir hem de GRUB2 kaynak kodunda görebiliriz:
 
-     ```
+```
 	 C
 	 segment = grub_linux_real_target >> 4;
      state.gs = state.fs = state.es = state.ds = state.ss = segment;
      state.cs = segment + 0x20;
-	 ```
+```
 	 
 Benim durumumda, çekirdek ```0x10000``` fiziksel adresine yüklenir. Bu, çekirdek kurulumu başladıktan sonra segment kayıtlarının aşağıdaki değerlere sahip olduğu anlamına gelir:
 	
-	 ```	
+```	
      gs = fs = es = ds = ss = 0x1000
      cs = 0x1020
-	 ```
+```
 ```start_of_setup``` atlamasının ardından, çekirdeğin aşağıdakileri yapması gerekir:
 
 - Tüm segment kayıt değerlerinin eşit olduğundan emin ol
@@ -356,31 +356,31 @@ Segment yazmaçlarının hizalanması
 
 Her şeyden önce, çekirdek ```ds``` ve ```es``` segment yazmaçlarının aynı adrese işaret etmesini sağlar. Sonra, ```cld``` talimatı kullanarak yön bayrağını temizler:
 	
-	```
+```
 	assembly
     movw    %ds, %ax
     movw    %ax, %es
     cld
-	```
+```
 Daha önce yazmış olduğum gibi, ```grub2```, çekirdeği kurulum kodunu ```0x10000``` adresinde ve  ```0x1020```'deki ```cs```'yi yükler; çünkü çalıştırma dosyanın başından başlamaz, ama buradaki atlama yerinden;
 
-	```
+```
 	assembly
     _start:
     .byte 0xeb
     .byte start_of_setup-1f
-	```
+```
 	
 jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
 
 [4d 5a](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L46)'dan ```512``` bayt offset'inde olan yerdedir. Ayrıca, ```cs```'yi ```0x1020``` den ```0x1000```'e ve diğer tüm segment yazmaçlarına hizalamamız gerekir. Bundan sonra yığını(stack) kurduk:
 
-	```
+```
 	assembly
     pushw   %ds
     pushw   $6f
     lretw
-	```
+```
 
 
 [6](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L602)'nın adresinden itibaren yer alan ```ds``` değerini yığına(stack) iter(push eder). ```lretw``` talimatını etiketler ve yürütür. ```lretw``` talimatı çağrıldığında, ```6``` etiketinin adresini [instruction pointer](https://en.wikipedia.org/wiki/Program_counter) yazmacı'na kaydeder ve ```ds``` değeriyle ```cs``` değerini yükler. Daha sonra, `ds` ve` cs` aynı değerlere sahip olacaktır.
@@ -390,13 +390,13 @@ Stack Kurulumu
 
 Kurulum kodunun neredeyse tamamı C dili ortamını gerçek modda hazırlamak içindir. Bir sonraki [adım](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L575) ```ss``` yazmacının değerini kontrol ediyor ve doğru bir yığın(stack) oluşturuyor eğer ```ss``` yanlışsa:
 	
-	```
+```
 	assembly
     movw    %ss, %dx
     cmpw    %ax, %dx
     movw    %sp, %dx
     je      2f
-	```
+```
 Bu, 3 farklı senaryonun ortaya çıkmasına neden olabilir:
 
 * ```ss```'in geçerli değeri ```0x10000```'tür (```cs```'in yanındaki tüm diğer bölüm yazmaçları gibi)
@@ -423,13 +423,13 @@ Burada, ```dx``` (bootloader tarafından verilen ```sp``` değerini içeren) de�
 
 * İkinci senaryoda, (```ss``` != ```ds```). Önce, [_end](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/setup.ld)'in değerini (kurulum kodunun sonundaki adres) ```dx```'e koyar ve yığını(stack) kullanıp kullanamayacağımızı test etmek için ```testb``` talimatını kullanarak ```loadflags``` başlık alanını kontrol ederiz. [loadflags](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L320), aşağıdaki gibi tanımlanan bir bit maskesi header'ı olmaktadır:
 
-  ```
+```
   C
   #define LOADED_HIGH     (1<<0)
   #define QUIET_FLAG      (1<<5)
   #define KEEP_SEGMENTS   (1<<6)
   #define CAN_USE_HEAP    (1<<7)
-  ```
+```
 Ve önyükleme protokolünü okuyabildiğimiz için,
 
 ```
@@ -470,13 +470,13 @@ Bu, [setup_sig](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/setup
 BSS bölümü statik olarak tahsis edilmiş, başlatılmamış verileri depolamak için kullanılır. Linux dikkatli bir şekilde bu bellek alanını aşağıdaki kod kullanılarak sıfırlanmasını sağlar:
 
 ```
-    assembly
-    movw    $__bss_start, %di
-    movw    $_end+3, %cx
-    xorl    %eax, %eax
-    subw    %di, %cx
-    shrw    $2, %cx
-    rep; stosl
+assembly
+movw    $__bss_start, %di
+movw    $_end+3, %cx
+xorl    %eax, %eax
+subw    %di, %cx
+shrw    $2, %cx
+rep; stosl
 ```
 
 İlk olarak, [__bss_start](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/setup.ld) adresi ```di```'ye taşınır. Daha sonra, ```_end + 3``` adresi (+3 - 4 bayta hizalanır) ```cx```'e taşınır. ```eax``` yazmacı silinir (bir ```xor``` talimatı kullanılarak) ve bss bölüm boyutu (```cx-di```) hesaplanır ve ```cx```'e yerleştirilir. Daha sonra, ```cx``` dörde bölünür (bir 'word' boyutu) ve ```stosl``` talimatı ```eax``` (sıfır) değerini ```di```'nin gösterdiği adrese depolayarak ```di```'yi dört arttırarak tekrar ```cx```'e kadar tekrarlar Sıfıra ulaşır). Bu kodun net etkisi, sıfırların ```__bss_start```'dan ```_end```'e bellekteki tüm kelimeleri kullanarak yazıldığıdır:
@@ -501,7 +501,7 @@ Sonuç
 
 Linux-insides hakkındaki ilk yazının sonuna geldik. Sorularınız veya önerileriniz varsa, [@0xAX](https://twitter.com/0xAX) Twitter hesabımdan, [e-posta](anotherworldofworld@gmail.com) yoluyla veya GitHub'da [isuue](https://github.com/0xAX/linux-internals/issues/new) açarak bana ulaşabilirsiniz. Sonraki bölümde Linux çekirdeği kurulumundaki , ```memset```, ```memcpy```, ```earlyprintk```, konsol uygulaması ve başlatılması gibi bellek rutinlerini uygulayan ilk C kodunu ve çok daha fazlasını göreceğiz. 
 
-**İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen [linux-insides](https://github.com/0xAX/linux-internals)'a PR(Pull Request) gönderin.
+* İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen [linux-insides](https://github.com/0xAX/linux-internals)'a PR(Pull Request) gönderin.
 
 Linkler
 ------------------------------------------------------------------------------------------------------------------------
@@ -518,5 +518,3 @@ Linkler
   * [Ralf Brown's Interrupt List](http://www.ctyme.com/intr/int.htm)
   * [Power supply](https://en.wikipedia.org/wiki/Power_supply)
   * [Power good signal](https://en.wikipedia.org/wiki/Power_good_signal)
-
-
