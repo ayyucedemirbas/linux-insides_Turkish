@@ -1,6 +1,6 @@
-Daha önceki blog yazılarımı okuduysanız, bir süredir low level programlamayla ilgilendiğimi görürsünüz. Linux icin x86_64 Assembly programlamayla ilgili yazılar yazdım aynı zamanda Linux kaynak koduna dalmaya başladım. low-level programların; nasıl işlediğini, bilgisayarımda nasıl çalıştığını, bellekte nasıl yer aldıklarını, çekirdeğin süreçleri ve bellegi nasıl yönettiğini, network stack'in low-level'da nasıl çalıştığını ve diğer pek çok şeyi anlamaya büyük bir ilgim var. Bu nedenle, x86_64 icin Linux çekirdegi hakkında bir dizi yazı yazmaya karar verdim. 
+Daha önceki blog yazılarımı okuduysanız, bir süredir low level programlamayla ilgilendiğimi görürsünüz. Linux icin x86_64 Assembly programlamayla ilgili yazılar yazdım aynı zamanda Linux kaynak koduna dalmaya başladım. low-level programların; nasıl işlediğini, bilgisayarımda nasıl çalıştığını, bellekte nasıl yer aldıklarını, çekirdeğin süreçleri ve bellegi nasıl yönettiğini, network stack'in low-level'da nasıl çalıştığını ve diğer pek çok şeyi anlamaya büyük bir ilgim var. Bu nedenle, x86_64 için Linux çekirdegi hakkında bir dizi yazı yazmaya karar verdim. 
 
-Profesyonel bir çekirdek hacker'ı değilim. Çekirdek kodu yazmak benim gerçek işim değil. Bu benim için sadece bir hobi. Low-level'dan hoşlanıyorum ve bunun nasıl çalıştığını görmek ilgimi çekiyor. Bu nedenle kafa karıştırıcı bir sey görürseniz veya herhangi bir sorunuz/fikriniz varsa, [@0xAX](https://twitter.com/0xAX) Twitter hesabımdan, [e-posta](anotherworldofworld@gmail.com) yoluyla veya GitHub'da [issue](https://github.com/0xAX/linux-internals/issues/new) oluşturarak bana ulaşabilirsiniz. Buna minnettar olurum. Bütün yazılarım linux-insides GitHub sayfasından erişilebilir olacak. İngilizce dil bilgimle veya yazı içeriği ile ilgili bir hata fark ederseniz, Pull Request gondermekten çekinmeyin. 
+Profesyonel bir çekirdek hacker'ı değilim. Çekirdek kodu yazmak benim gerçek işim değil. Bu benim için sadece bir hobi. Low-level'dan hoşlanıyorum ve bunun nasıl çalıştığını görmek ilgimi çekiyor. Bu nedenle kafa karıştırıcı bir sey görürseniz veya herhangi bir sorunuz/fikriniz varsa, [@0xAX](https://twitter.com/0xAX) Twitter hesabımdan, [e-posta](anotherworldofworld@gmail.com) yoluyla veya GitHub'da [issue](https://github.com/0xAX/linux-internals/issues/new) oluşturarak bana ulaşabilirsiniz. Buna minnettar olurum. Bütün yazılarım linux-insides GitHub sayfasından erişilebilir olacak. İngilizce dil bilgimle veya yazı içeriği ile ilgili bir hata fark ederseniz, Pull Request göndermekten çekinmeyin. 
 
 Unutmayın ki; bu resmi bir dokümantasyon değildir, sadece öğrendiklerimi paylaşıyorum. 
 
@@ -10,7 +10,7 @@ Size gerekli olan beceriler;
    - Assembly kod bilgisi (AT&T soz dizimi)
 Bazı araçları öğrenmeye başlarsanız, yazılarım sırasında bazı kısımları zaten açıklamaya çalışacağım. Pekala, giriş kısmı burada son buluyor. Şimdi çekirdek ve low-level'a dalmaya başlayabiliriz. 
 
-Kodların tamamı aslında 3.18 çekirdeği için. Değişiklikler olursa yazılarımı buna göre güncelleyeceğim. 
+Kodların tamamı aslında 3.18 çekirdeği içindir. Değişiklikler olursa yazılarımı buna göre güncelleyeceğim. 
 
 Sihirli Güç Düğmesi, Sonrasında Neler Oluyor?
 
