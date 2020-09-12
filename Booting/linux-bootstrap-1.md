@@ -371,7 +371,6 @@ Daha önce yazmış olduğum gibi, ```grub2```, çekirdeği kurulum kodunu ```0x
     .byte start_of_setup-1f
 ```
 	
-jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
 
 [4d 5a](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L46)'dan ```512``` bayt offset'inde olan yerdedir. Ayrıca, ```cs```'yi ```0x1020``` den ```0x1000```'e ve diğer tüm segment yazmaçlarına hizalamamız gerekir. Bundan sonra yığını(stack) kurduk:
 
