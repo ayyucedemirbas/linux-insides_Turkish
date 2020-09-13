@@ -1,16 +1,16 @@
-Daha onceki blog yazilarimi okuduysaniz, bir suredir low level programlamayla ilgilendigimi gorursunuz. Linux icin x86_64 Assembly programlamayla ilgili yazılar yazdım aynı zamanda Linux kaynak koduna dalmaya basladim. low-level programlarin; nasıl isledigini, bilgisayarımda nasıl calistigini, bellekte nasil yer aldiklarini, cekirdegin surecleri ve bellegi nasil yonettigini, network stack'in low-level'da nasil calistigini ve diger pek cok seyi anlamaya buyuk bir ilgim var. Bu nedenle, x86_64 icin Linux cekirdegi hakkında bir dizi yazi yazmaya karar verdim. 
+Daha önceki blog yazılarımı okuduysanız, bir süredir low level programlamayla ilgilendiğimi görürsünüz. Linux icin x86_64 Assembly programlamayla ilgili yazılar yazdım aynı zamanda Linux kaynak koduna dalmaya başladım. low-level programların; nasıl işlediğini, bilgisayarımda nasıl çalıştığını, bellekte nasıl yer aldıklarını, çekirdeğin süreçleri ve bellegi nasıl yönettiğini, network stack'in low-level'da nasıl çalıştığını ve diğer pek çok şeyi anlamaya büyük bir ilgim var. Bu nedenle, x86_64 için Linux çekirdegi hakkında bir dizi yazı yazmaya karar verdim. 
 
-Profesyonel bir cekirdek hacker'ı degilim. Cekirdek kodu yazmak benim gercek isim degil. Bu benim icin sadece bir hobi. Low-level'dan hoslaniyorum ve bunun nasil calistigini gormek ilgimi cekiyor. Bu nedenle kafa karistirici bir sey gorurseniz veya herhangi bir sorunuz/fikriniz varsa, @0xAX twitter hesabimban, mail yoluyla veya GitHub'da issue olusturarak bana ulasabilirsiniz. Buna minnettar olurum. Butun yazilarim linux-insides GitHub sayfasindan erisilebilir olacak. İngilizce dil bilgimle veya yazi icerigi ile ilgili bir hata fark ederseniz, Pull Request gondermekten cekinmeyin. 
+Profesyonel bir çekirdek hacker'ı değilim. Çekirdek kodu yazmak benim gerçek işim değil. Bu benim için sadece bir hobi. Low-level'dan hoşlanıyorum ve bunun nasıl çalıştığını görmek ilgimi çekiyor. Bu nedenle kafa karıştırıcı bir sey görürseniz veya herhangi bir sorunuz/fikriniz varsa, [@0xAX](https://twitter.com/0xAX) Twitter hesabımdan, [e-posta](anotherworldofworld@gmail.com) yoluyla veya GitHub'da [issue](https://github.com/0xAX/linux-internals/issues/new) oluşturarak bana ulaşabilirsiniz. Buna minnettar olurum. Bütün yazılarım linux-insides GitHub sayfasından erişilebilir olacak. İngilizce dil bilgimle veya yazı içeriği ile ilgili bir hata fark ederseniz, Pull Request göndermekten çekinmeyin. 
 
-Unutmayin ki; bu resmi bir dokumantasyon degildir, sadece ogrendiklerimi paylasiyorum. 
+Unutmayın ki; bu resmi bir dokümantasyon değildir, sadece öğrendiklerimi paylaşıyorum. 
 
 Size gerekli olan beceriler;
 
    - C programlama dili bilgisi
    - Assembly kod bilgisi (AT&T soz dizimi)
-Bazi aracları ogrenmeye baslarsaniz, yazilarim sırasında bazi kısımlari zaten aciklamaya calisacagim. Pekala, giriş kısmın burada son buluyor. Şimdi çekirdek ve low-level'a dalmaya başlayabiliriz. 
+Bazı araçları öğrenmeye başlarsanız, yazılarım sırasında bazı kısımları zaten açıklamaya çalışacağım. Pekala, giriş kısmı burada son buluyor. Şimdi çekirdek ve low-level'a dalmaya başlayabiliriz. 
 
-Kodların tamamı aslında 3.18 çekirdeği için. Değişiklikler olursa yazılarımı buna göre güncelleyeceğim. 
+Kodların tamamı aslında 3.18 çekirdeği içindir. Değişiklikler olursa yazılarımı buna göre güncelleyeceğim. 
 
 Sihirli Güç Düğmesi, Sonrasında Neler Oluyor?
 
@@ -49,7 +49,7 @@ python
 Tamam, Real Mode ve bellek adreslemeyi biliyoruz. Reset'lemeden sonra Register değerlerini tartışmaya geri dönelim: 
 
 
-```CS``` kaydı iki bölümden oluşur: Görünür Segment Selector ve gizli taban adresi. Taban adresi genellikle 16 ile Segment Selector değer çarpılarak oluşturulurken, bir donanım sıfırlama sırasında CS kayıttaki Segment Selector ```0xf000``` ile yüklenir ve taban adresi ```0xffff0000``` ile yüklenir; Işlemci, ```CS``` değiştirilinceye kadar bu özel taban adresini kullanır.
+```CS``` kaydı iki bölümden oluşur: Görünür Segment Selector ve gizli taban adresi. Taban adresi genellikle 16 ile Segment Selector değer çarpılarak oluşturulurken, bir donanım sıfırlama sırasında CS kayıttaki Segment Selector ```0xf000``` ile yüklenir ve taban adresi ```0xffff0000``` ile yüklenir; İşlemci, ```CS``` değiştirilinceye kadar bu özel taban adresini kullanır.
 
 
 Başlangıç adresi; taban adresi, EIP kaydındaki değere eklenerek oluşturulmuştur:
@@ -371,7 +371,6 @@ Daha önce yazmış olduğum gibi, ```grub2```, çekirdeği kurulum kodunu ```0x
     .byte start_of_setup-1f
 ```
 	
-jump, which is at a 512 byte offset from 4d 5a. It also needs to align cs from 0x10200 to 0x10000, as well as all other segment registers. After that, we set up the stack:
 
 [4d 5a](https://github.com/torvalds/linux/blob/v4.16/arch/x86/boot/header.S#L46)'dan ```512``` bayt offset'inde olan yerdedir. Ayrıca, ```cs```'yi ```0x1020``` den ```0x1000```'e ve diğer tüm segment yazmaçlarına hizalamamız gerekir. Bundan sonra yığını(stack) kurduk:
 
@@ -499,7 +498,7 @@ assembly
 Sonuç
 ---------------------------------------------------------------------------------------
 
-Linux-insides hakkındaki ilk yazının sonuna geldik. Sorularınız veya önerileriniz varsa, [@0xAX](https://twitter.com/0xAX) Twitter hesabımdan, [e-posta](anotherworldofworld@gmail.com) yoluyla veya GitHub'da [isuue](https://github.com/0xAX/linux-internals/issues/new) açarak bana ulaşabilirsiniz. Sonraki bölümde Linux çekirdeği kurulumundaki , ```memset```, ```memcpy```, ```earlyprintk```, konsol uygulaması ve başlatılması gibi bellek rutinlerini uygulayan ilk C kodunu ve çok daha fazlasını göreceğiz. 
+Linux-insides hakkındaki ilk yazının sonuna geldik. Sorularınız veya önerileriniz varsa, [@0xAX](https://twitter.com/0xAX) Twitter hesabımdan, [e-posta](anotherworldofworld@gmail.com) yoluyla veya GitHub'da [issue](https://github.com/0xAX/linux-internals/issues/new) açarak bana ulaşabilirsiniz. Sonraki bölümde Linux çekirdeği kurulumundaki , ```memset```, ```memcpy```, ```earlyprintk```, konsol uygulaması ve başlatılması gibi bellek rutinlerini uygulayan ilk C kodunu ve çok daha fazlasını göreceğiz. 
 
 * İngilizce ana dilim değil ve bu durum için özür dilerim. Herhangi bir hata bulursanız lütfen [linux-insides](https://github.com/0xAX/linux-internals)'a PR(Pull Request) gönderin.
 
