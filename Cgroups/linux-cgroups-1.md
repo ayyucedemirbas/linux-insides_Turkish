@@ -22,3 +22,47 @@ Bir 'kontrol grubu alt sistemi' (control group subsystem), bir işlemci süresi 
 * `perf_event` - bir gruba [performans olaylarına] (https: //en.wikipedia.org/wiki/Perf_ \ (Linux \)) erişim sağlar;
 * `hugetlb` - bir grup için [büyük sayfalar] (https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt) desteğini etkinleştirir;
 * `pid` - bir gruptaki işlemlerin sayısını sınırlar.
+
+Bu kontrol grubu alt sistemlerinin her biri, ilgili konfigürasyon seçeneğine bağlıdır. Örneğin, `cpuset` alt sistemi `CONFIG_CPUSETS` çekirdek yapılandırma seçeneği aracılığıyla etkinleştirilmelidir, `io` alt sistemi `CONFIG_BLK_CGROUP` çekirdek yapılandırma seçeneği vb. aracılığıyla etkinleştirilmelidir. Bu çekirdek yapılandırma seçeneklerinin tümü  ,`General setup → Control Group support` menüsünden bulunabilir:
+
+![menuconfig](images/menuconfig.png)
+
+[proc](https://en.wikipedia.org/wiki/Procfs) dosya sistemi aracılığıyla bilgisayarınızda etkinleştirilmiş kontrol gruplarını görebilirsiniz:
+
+```
+$ cat /proc/cgroups 
+#subsys_name	hierarchy	num_cgroups	enabled
+cpuset	8	1	1
+cpu	7	66	1
+cpuacct	7	66	1
+blkio	11	66	1
+memory	9	94	1
+devices	6	66	1
+freezer	2	1	1
+net_cls	4	1	1
+perf_event	3	1	1
+net_prio	4	1	1
+hugetlb	10	1	1
+pids	5	69	1
+```
+veya [sysfs](https://en.wikipedia.org/wiki/Sysfs) ile:
+
+```
+$ ls -l /sys/fs/cgroup/
+total 0
+dr-xr-xr-x 5 root root  0 Dec  2 22:37 blkio
+lrwxrwxrwx 1 root root 11 Dec  2 22:37 cpu -> cpu,cpuacct
+lrwxrwxrwx 1 root root 11 Dec  2 22:37 cpuacct -> cpu,cpuacct
+dr-xr-xr-x 5 root root  0 Dec  2 22:37 cpu,cpuacct
+dr-xr-xr-x 2 root root  0 Dec  2 22:37 cpuset
+dr-xr-xr-x 5 root root  0 Dec  2 22:37 devices
+dr-xr-xr-x 2 root root  0 Dec  2 22:37 freezer
+dr-xr-xr-x 2 root root  0 Dec  2 22:37 hugetlb
+dr-xr-xr-x 5 root root  0 Dec  2 22:37 memory
+lrwxrwxrwx 1 root root 16 Dec  2 22:37 net_cls -> net_cls,net_prio
+dr-xr-xr-x 2 root root  0 Dec  2 22:37 net_cls,net_prio
+lrwxrwxrwx 1 root root 16 Dec  2 22:37 net_prio -> net_cls,net_prio
+dr-xr-xr-x 2 root root  0 Dec  2 22:37 perf_event
+dr-xr-xr-x 5 root root  0 Dec  2 22:37 pids
+dr-xr-xr-x 5 root root  0 Dec  2 22:37 systemd
+```
